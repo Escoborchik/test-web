@@ -28,6 +28,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { CourtForm } from '@/components/court-form';
 import { cn } from '@/lib/utils';
 import { TimePicker } from '@/components/ui/timepicker';
+import { useAppSelector } from '@/store';
+import { PriceSlot } from '@/types';
 
 // Mock courts data
 const mockCourts = [
@@ -76,8 +78,12 @@ const amenities = [
 ];
 
 export default function OrganizationPage() {
+	const courtsFromStore = useAppSelector(
+		(state) => state.courtsManagment.courts
+	);
+
 	const [activeTab, setActiveTab] = useState('info');
-	const [courts, setCourts] = useState(mockCourts);
+	const [courts, setCourts] = useState(courtsFromStore);
 	const [editingCourt, setEditingCourt] = useState<any>(null);
 	const [isAddingCourt, setIsAddingCourt] = useState(false);
 	const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
@@ -121,13 +127,13 @@ export default function OrganizationPage() {
 		}
 	};
 
-	const toggleCourtVisibility = (courtId: number) => {
-		setCourts(
-			courts.map((c) =>
-				c.id === courtId ? { ...c, visible: !c.visible } : c
-			)
-		);
-	};
+	// const toggleCourtVisibility = (courtId: number) => {
+	// 	setCourts(
+	// 		courts.map((c) =>
+	// 			c.id === courtId ? { ...c, visible: !c.visible } : c
+	// 		)
+	// 	);
+	// };
 
 	const handleDeleteCourt = (court: any) => {
 		setCourtToDelete(court);
@@ -457,10 +463,12 @@ export default function OrganizationPage() {
 															{court.name}
 														</h4>
 														<p className="text-sm text-muted-foreground">
-															{court.type} •{' '}
-															{court.surface} •{' '}
-															{court.sport} •{' '}
-															{court.address}
+															{court.isIndoor
+																? 'Открытый'
+																: 'Закрытый'}{' '}
+															• {court.coverType}{' '}
+															• {court.sportType}{' '}
+															• {court.street}
 														</p>
 													</div>
 												</div>
@@ -481,13 +489,14 @@ export default function OrganizationPage() {
 														variant="outline"
 														size="icon"
 														className="h-8 w-8 bg-transparent"
-														onClick={() =>
-															toggleCourtVisibility(
-																court.id
-															)
+														onClick={
+															() => {}
+															// toggleCourtVisibility(
+															// 	court.id
+															// )
 														}
 													>
-														{court.visible ? (
+														{false ? (
 															<Eye className="h-4 w-4" />
 														) : (
 															<EyeOff className="h-4 w-4" />
@@ -517,18 +526,17 @@ export default function OrganizationPage() {
 														<p className="text-sm font-medium text-foreground mb-1">
 															Будни (Пн-Пт)
 														</p>
-														{court.pricing.weekday.map(
+														{court.prices.weekdays.map(
 															(
-																slot: any,
+																slot: PriceSlot,
 																idx: number
 															) => (
 																<p
 																	key={idx}
 																	className="text-xs text-muted-foreground"
 																>
-																	{slot.start}{' '}
-																	- {slot.end}
-																	:{' '}
+																	{slot.from}{' '}
+																	- {slot.to}:{' '}
 																	{slot.price}{' '}
 																	₽
 																</p>
@@ -539,18 +547,17 @@ export default function OrganizationPage() {
 														<p className="text-sm font-medium text-foreground mb-1">
 															Выходные (Сб-Вс)
 														</p>
-														{court.pricing.weekend.map(
+														{court.prices.weekends.map(
 															(
-																slot: any,
+																slot: PriceSlot,
 																idx: number
 															) => (
 																<p
 																	key={idx}
 																	className="text-xs text-muted-foreground"
 																>
-																	{slot.start}{' '}
-																	- {slot.end}
-																	:{' '}
+																	{slot.from}{' '}
+																	- {slot.to}:{' '}
 																	{slot.price}{' '}
 																	₽
 																</p>
