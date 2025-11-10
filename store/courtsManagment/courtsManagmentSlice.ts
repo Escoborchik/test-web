@@ -14,8 +14,9 @@ const initialState: CourtsManagmentState = {
 			coverType: 'hard',
 			sportType: 'tennis',
 			isIndoor: false,
+			isVisible: true,
 			street: 'ул. Спортивная, 15',
-			image: '/images/courts/central-a.jpg',
+			image: '',
 			prices: {
 				weekdays: [
 					{
@@ -50,8 +51,9 @@ const initialState: CourtsManagmentState = {
 			coverType: 'terraflex',
 			sportType: 'padel',
 			isIndoor: true,
+			isVisible: true,
 			street: 'просп. Панорамный, 8',
-			image: '/images/courts/panorama-indoor.jpg',
+			image: '',
 			prices: {
 				weekdays: [
 					{
@@ -86,8 +88,9 @@ const initialState: CourtsManagmentState = {
 			coverType: 'grass',
 			sportType: 'tennis',
 			isIndoor: false,
+			isVisible: true,
 			street: 'ул. Парковая, 3к2',
-			image: '/images/courts/green-park.jpg',
+			image: '',
 			prices: {
 				weekdays: [
 					{

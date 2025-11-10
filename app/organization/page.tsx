@@ -28,8 +28,11 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { CourtForm } from '@/components/court-form';
 import { cn } from '@/lib/utils';
 import { TimePicker } from '@/components/ui/timepicker';
-import { useAppSelector } from '@/store';
-import { PriceSlot } from '@/types';
+import { useAppDispatch, useAppSelector } from '@/store';
+import { Court, PriceSlot } from '@/types';
+import { SPORT_TYPE_LABELS, COVER_TYPE_LABELS } from '@/constants';
+import { updateCourt } from '@/store/courtsManagment';
+import { CourtFormEdit } from '@/components/ui/court-form-edit';
 
 // Mock courts data
 const mockCourts = [
@@ -78,6 +81,7 @@ const amenities = [
 ];
 
 export default function OrganizationPage() {
+	const dispatch = useAppDispatch();
 	const courtsFromStore = useAppSelector(
 		(state) => state.courtsManagment.courts
 	);
@@ -104,8 +108,9 @@ export default function OrganizationPage() {
 		}
 	};
 
-	const handleSaveCourt = (courtData: any) => {
+	const handleSaveCourt = (courtData: Court) => {
 		if (editingCourt) {
+			dispatch(updateCourt(courtData));
 			setCourts(
 				courts.map((c) =>
 					c.id === editingCourt.id
@@ -118,13 +123,14 @@ export default function OrganizationPage() {
 				)
 			);
 			setEditingCourt(null);
-		} else {
-			setCourts([
-				...courts,
-				{ ...courtData, id: courts.length + 1, visible: true },
-			]);
-			setIsAddingCourt(false);
 		}
+		// } else {
+		// 	setCourts([
+		// 		...courts,
+		// 		{ ...courtData, visible: true },
+		// 	]);
+		// 	setIsAddingCourt(false);
+		// }
 	};
 
 	// const toggleCourtVisibility = (courtId: number) => {
@@ -444,7 +450,7 @@ export default function OrganizationPage() {
 							{courts.map((court) => (
 								<div key={court.id}>
 									{editingCourt?.id === court.id ? (
-										<CourtForm
+										<CourtFormEdit
 											court={court}
 											onSave={handleSaveCourt}
 											onCancel={() =>
@@ -466,8 +472,20 @@ export default function OrganizationPage() {
 															{court.isIndoor
 																? 'Открытый'
 																: 'Закрытый'}{' '}
-															• {court.coverType}{' '}
-															• {court.sportType}{' '}
+															•{' '}
+															{
+																COVER_TYPE_LABELS[
+																	court
+																		.coverType
+																]
+															}{' '}
+															•{' '}
+															{
+																SPORT_TYPE_LABELS[
+																	court
+																		.sportType
+																]
+															}{' '}
 															• {court.street}
 														</p>
 													</div>
@@ -496,7 +514,7 @@ export default function OrganizationPage() {
 															// )
 														}
 													>
-														{false ? (
+														{court.isVisible ? (
 															<Eye className="h-4 w-4" />
 														) : (
 															<EyeOff className="h-4 w-4" />
