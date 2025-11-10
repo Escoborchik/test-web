@@ -1,5 +1,10 @@
 // actions
-export { updateCourt } from './courtsManagmentSlice';
+export {
+	addCourt,
+	deleteCourt,
+	updateCourt,
+	updateVisible,
+} from './courtsManagmentSlice';
 
 // selectors
 export { selectCourts } from './courtsManagmentSlice';

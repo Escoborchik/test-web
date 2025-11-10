@@ -135,10 +135,34 @@ const courtsManagmentSlice = createSlice({
 
 			state.courts[indexOfCourtForReplacing] = action.payload;
 		},
+
+		addCourt: (state, action: PayloadAction<Court>) => {
+			state.courts.unshift(action.payload);
+		},
+
+		deleteCourt: (state, action: PayloadAction<Court>) => {
+			state.courts = state.courts.filter(
+				(court) => court.id !== action.payload.id
+			);
+		},
+
+		updateVisible: (state, action: PayloadAction<string>) => {
+			const courtIdForUpdate = action.payload;
+
+			const courtIdx = state.courts.findIndex(
+				(court) => court.id === courtIdForUpdate
+			);
+
+			const court = state.courts[courtIdx];
+			if (court) {
+				court.isVisible = !court.isVisible;
+			}
+		},
 	},
 });
 
-export const { updateCourt } = courtsManagmentSlice.actions;
+export const { updateCourt, addCourt, updateVisible, deleteCourt } =
+	courtsManagmentSlice.actions;
 
 // selectors
 export const selectCourts = (state: RootState) => state.courtsManagment.courts;

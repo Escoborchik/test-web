@@ -1,13 +1,10 @@
 'use client';
 
-import { useState } from 'react';
 import { AdminLayout } from '@/components/admin-layout';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card } from '@/components/ui/card';
+import { CourtFormCreate } from '@/components/court-form-create';
+import { CourtFormEdit } from '@/components/court-form-edit';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { Card } from '@/components/ui/card';
 import {
 	Dialog,
 	DialogContent,
@@ -15,24 +12,31 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
+import { TimePicker } from '@/components/ui/timepicker';
+import { COVER_TYPE_LABELS, SPORT_TYPE_LABELS } from '@/constants';
+import { cn } from '@/lib/utils';
+import { useAppDispatch, useAppSelector } from '@/store';
+import {
+	addCourt,
+	deleteCourt,
+	updateCourt,
+	updateVisible,
+} from '@/store/courtsManagment';
+import { Court, PriceSlot } from '@/types';
 import {
 	Building2,
-	Upload,
-	Plus,
 	Edit2,
-	Trash2,
 	Eye,
 	EyeOff,
+	Plus,
+	Trash2,
+	Upload,
 } from 'lucide-react';
-import { Checkbox } from '@/components/ui/checkbox';
-import { CourtForm } from '@/components/court-form';
-import { cn } from '@/lib/utils';
-import { TimePicker } from '@/components/ui/timepicker';
-import { useAppDispatch, useAppSelector } from '@/store';
-import { Court, PriceSlot } from '@/types';
-import { SPORT_TYPE_LABELS, COVER_TYPE_LABELS } from '@/constants';
-import { updateCourt } from '@/store/courtsManagment';
-import { CourtFormEdit } from '@/components/ui/court-form-edit';
+import { useState } from 'react';
 
 // Mock courts data
 const mockCourts = [
@@ -124,22 +128,22 @@ export default function OrganizationPage() {
 			);
 			setEditingCourt(null);
 		}
-		// } else {
-		// 	setCourts([
-		// 		...courts,
-		// 		{ ...courtData, visible: true },
-		// 	]);
-		// 	setIsAddingCourt(false);
-		// }
 	};
 
-	// const toggleCourtVisibility = (courtId: number) => {
-	// 	setCourts(
-	// 		courts.map((c) =>
-	// 			c.id === courtId ? { ...c, visible: !c.visible } : c
-	// 		)
-	// 	);
-	// };
+	const handleAddCourt = (courtData: Court) => {
+		dispatch(addCourt(courtData));
+		setCourts([{ ...courtData }, ...courts]);
+		setIsAddingCourt(false);
+	};
+
+	const toggleCourtVisibility = (courtId: string) => {
+		dispatch(updateVisible(courtId));
+		setCourts(
+			courts.map((c) =>
+				c.id === courtId ? { ...c, isVisible: !c.isVisible } : c
+			)
+		);
+	};
 
 	const handleDeleteCourt = (court: any) => {
 		setCourtToDelete(court);
@@ -148,6 +152,7 @@ export default function OrganizationPage() {
 
 	const confirmDelete = () => {
 		if (courtToDelete) {
+			dispatch(deleteCourt(courtToDelete.id));
 			setCourts(courts.filter((c) => c.id !== courtToDelete.id));
 			setDeleteConfirmOpen(false);
 			setCourtToDelete(null);
@@ -439,8 +444,8 @@ export default function OrganizationPage() {
 
 						{/* Add Court Form */}
 						{isAddingCourt && (
-							<CourtForm
-								onSave={handleSaveCourt}
+							<CourtFormCreate
+								onSave={handleAddCourt}
 								onCancel={() => setIsAddingCourt(false)}
 							/>
 						)}
@@ -507,11 +512,10 @@ export default function OrganizationPage() {
 														variant="outline"
 														size="icon"
 														className="h-8 w-8 bg-transparent"
-														onClick={
-															() => {}
-															// toggleCourtVisibility(
-															// 	court.id
-															// )
+														onClick={() =>
+															toggleCourtVisibility(
+																court.id
+															)
 														}
 													>
 														{court.isVisible ? (

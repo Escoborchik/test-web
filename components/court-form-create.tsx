@@ -1,11 +1,12 @@
 'use client';
 
+import { useState } from 'react';
+
 import { Court, CoverType, PriceDayGroup, PriceSlot, SportType } from '@/types';
 
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { useState } from 'react';
+import { Label } from '@/components/ui/label';
 
 import {
 	Select,
@@ -14,22 +15,30 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '@/components/ui/select';
+import { TimePicker } from '@/components/ui/timepicker';
 import { COVER_TYPE_LABELS, SPORT_TYPE_LABELS } from '@/constants';
 import { Plus, X } from 'lucide-react';
-import { TimePicker } from './timepicker';
 
-interface CourtFormEditProps {
-	court: Court;
+interface CourtFormCreateProps {
 	onSave: (data: Court) => void;
 	onCancel: () => void;
 }
 
-export const CourtFormEdit = ({
-	court,
-	onSave,
-	onCancel,
-}: CourtFormEditProps) => {
-	const [formData, setFormData] = useState<Court>(court);
+export const CourtFormCreate = ({ onSave, onCancel }: CourtFormCreateProps) => {
+	const [formData, setFormData] = useState<Court>({
+		id: crypto.randomUUID(),
+		name: 'Корт',
+		coverType: 'hard',
+		sportType: 'tennis',
+		isIndoor: true,
+		isVisible: true,
+		street: 'просп. Панорамный, 8',
+		image: '',
+		prices: {
+			weekdays: [],
+			weekends: [],
+		},
+	});
 
 	const handleChangeData = <Field extends keyof Court>(
 		field: Field,

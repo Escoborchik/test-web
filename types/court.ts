@@ -16,6 +16,7 @@ export interface Court {
 	coverType: CoverType;
 	sportType: SportType;
 	isIndoor: boolean; // тип корта
+	isVisible: boolean;
 	street: string;
 	image: string;
 	prices: Record<'weekdays' | 'weekends', PriceSlot[]>;
