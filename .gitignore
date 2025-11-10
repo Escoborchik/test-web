@@ -9,6 +9,7 @@
 
 # production
 /build
+/.vscode
 
 # debug
 npm-debug.log*
