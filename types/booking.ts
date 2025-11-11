@@ -18,6 +18,7 @@ export interface Booking {
 	courtId: string;
 	date: string;
 	time: string;
+	duration: number;
 	price: number;
 	status: BookingStatus;
 	isRecurring: boolean;

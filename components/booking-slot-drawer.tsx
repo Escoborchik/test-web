@@ -146,11 +146,7 @@ export function BookingSlotDrawer({
 								</div>
 								<div>
 									<p className="text-sm font-medium text-foreground">
-										{booking.time} -{' '}
-										{calculateEndTime(
-											booking.time,
-											booking.duration
-										)}
+										{booking.time}
 									</p>
 									<p className="text-xs text-muted-foreground">
 										Время бронирования
@@ -168,7 +164,7 @@ export function BookingSlotDrawer({
 						>
 							Отменить текущее
 						</Button>
-						{booking.isRepeated && (
+						{booking.isRecurring && (
 							<Button
 								variant="outline"
 								className="w-full text-destructive hover:text-destructive bg-transparent"

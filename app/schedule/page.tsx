@@ -1,9 +1,17 @@
 'use client';
 
-import { useState } from 'react';
+import { AddBookingDrawer } from '@/components/add-booking-drawer';
 import { AdminLayout } from '@/components/admin-layout';
-import { Card } from '@/components/ui/card';
+import { BookingSlotDrawer } from '@/components/booking-slot-drawer';
 import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import { Card } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from '@/components/ui/popover';
 import {
 	Select,
 	SelectContent,
@@ -11,19 +19,15 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '@/components/ui/select';
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from '@/components/ui/popover';
-import { CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
-import { Calendar } from '@/components/ui/calendar';
+import { SPORT_TYPE_LABELS } from '@/constants';
 import { cn } from '@/lib/utils';
+import { useAppSelector } from '@/store';
+import { selectCourts } from '@/store/courtsManagment';
+import { Booking } from '@/types/booking';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
-import { AddBookingDrawer } from '@/components/add-booking-drawer';
-import { BookingSlotDrawer } from '@/components/booking-slot-drawer';
-import { Label } from '@/components/ui/label';
+import { CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useMemo, useState } from 'react';
 
 const timeSlots = Array.from({ length: 30 }, (_, i) => {
 	const totalMinutes = 8 * 60 + i * 30;
@@ -151,8 +155,32 @@ const mockBookings: any = {
 };
 
 export default function SchedulePage() {
+	const allCourts = useAppSelector(selectCourts);
+	const bookings = useAppSelector(
+		(state) => state.bookingsManagment.bookings
+	);
+
+	const bookingsForShedule = useMemo(
+		() =>
+			bookings.reduce<Record<string, Record<string, Booking[]>>>(
+				(acc, booking) => {
+					if (!acc[booking.date]) {
+						acc[booking.date] = {};
+					}
+					if (!acc[booking.date][booking.courtId]) {
+						acc[booking.date][booking.courtId] = [];
+					}
+					acc[booking.date][booking.courtId].push(booking);
+
+					return acc;
+				},
+				{}
+			),
+		[bookings]
+	);
+
 	const [selectedDate, setSelectedDate] = useState<Date>(
-		new Date('2025-01-15')
+		new Date('2025-11-22')
 	);
 	const [selectedLocation, setSelectedLocation] = useState('all');
 	const [selectedCourtType, setSelectedCourtType] = useState('all');
@@ -165,30 +193,32 @@ export default function SchedulePage() {
 	const [newBookingSlot, setNewBookingSlot] = useState<any>(null);
 
 	const filteredCourts = allCourts.filter((court) => {
-		if (selectedLocation !== 'all' && court.location !== selectedLocation)
+		if (selectedLocation !== 'all' && court.street !== selectedLocation)
 			return false;
-		if (selectedCourtType !== 'all' && court.type !== selectedCourtType)
+		// if (selectedCourtType !== 'all' && court.isIndoor !== selectedCourtType)
+		// 	return false;
+		if (selectedSport !== 'all' && court.sportType !== selectedSport)
 			return false;
-		if (selectedSport !== 'all' && court.sport !== selectedSport)
-			return false;
-		if (
-			courtRangeFrom !== 'all' &&
-			court.id < Number.parseInt(courtRangeFrom)
-		)
-			return false;
-		if (courtRangeTo !== 'all' && court.id > Number.parseInt(courtRangeTo))
-			return false;
+		// if (
+		// 	courtRangeFrom !== 'all' &&
+		// 	court.id < Number.parseInt(courtRangeFrom)
+		// )
+		// 	return false;
+		// if (courtRangeTo !== 'all' && court.id > Number.parseInt(courtRangeTo))
+		// 	return false;
 		return true;
 	});
 
-	const getBookingForSlot = (courtId: number, time: string) => {
+	const getBookingForSlot = (courtId: string, time: string) => {
 		const dateStr = format(selectedDate, 'yyyy-MM-dd');
-		const bookings = mockBookings[dateStr]?.[courtId] || [];
+		const bookings = bookingsForShedule[dateStr]?.[courtId] || [];
 
 		for (const booking of bookings) {
+			const bookingStartTime = booking.time.split('-')[0];
+
 			const bookingStartMinutes =
-				Number.parseInt(booking.time.split(':')[0]) * 60 +
-				Number.parseInt(booking.time.split(':')[1]);
+				Number.parseInt(bookingStartTime.split(':')[0]) * 60 +
+				Number.parseInt(bookingStartTime.split(':')[1]);
 			const slotMinutes =
 				Number.parseInt(time.split(':')[0]) * 60 +
 				Number.parseInt(time.split(':')[1]);
@@ -216,7 +246,7 @@ export default function SchedulePage() {
 		setSelectedDate(date);
 	};
 
-	const handleSlotClick = (courtId: number, time: string, court: any) => {
+	const handleSlotClick = (courtId: string, time: string, court: any) => {
 		const bookingInfo = getBookingForSlot(courtId, time);
 		if (bookingInfo) {
 			const startMinutes =
@@ -231,7 +261,7 @@ export default function SchedulePage() {
 
 			setSelectedSlot({
 				...bookingInfo,
-				court: court.name,
+				courtName: court.name,
 				time: bookingInfo.time,
 				endTime,
 				courtId: court.id,
@@ -437,13 +467,11 @@ export default function SchedulePage() {
 											{court.name}
 										</p>
 										<p className="text-xs text-muted-foreground mt-0.5">
-											{court.type === 'open'
+											{court.isIndoor
 												? 'Открытый'
 												: 'Закрытый'}{' '}
 											•{' '}
-											{court.sport === 'tennis'
-												? 'Теннис'
-												: 'Падел'}
+											{SPORT_TYPE_LABELS[court.sportType]}
 										</p>
 									</div>
 								))}
@@ -497,9 +525,11 @@ export default function SchedulePage() {
 															}
 														>
 															<p className="text-xs font-medium text-foreground truncate">
-																{
-																	bookingInfo.client
-																}
+																{bookingInfo.lastName +
+																	' ' +
+																	bookingInfo
+																		.firstName[0] +
+																	'.'}
 															</p>
 														</div>
 													) : !bookingInfo ? (
