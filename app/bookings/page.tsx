@@ -15,11 +15,6 @@ import {
 	DialogTitle,
 } from '@/components/ui/dialog';
 import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from '@/components/ui/popover';
-import {
 	Select,
 	SelectContent,
 	SelectItem,
@@ -29,19 +24,9 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { Booking } from '@/types/booking';
-import { format } from 'date-fns';
-import { ru } from 'date-fns/locale';
-import {
-	CalendarIcon,
-	Check,
-	ChevronLeft,
-	ChevronRight,
-	X,
-} from 'lucide-react';
+import { Check, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
-import { Calendar } from '@/components/ui/calendar';
-import { cn } from '@/lib/utils';
 import { updateStatusBooking } from '@/store/bookingsManagment';
 import { selectCourts } from '@/store/courtsManagment';
 
@@ -116,7 +101,7 @@ export default function BookingsPage() {
 		(state) => state.bookingsManagment.bookings
 	);
 	const courts = useAppSelector(selectCourts);
-	const [selectedDate, setSelectedDate] = useState<Date | undefined>();
+	// const [selectedDate, setSelectedDate] = useState<Date | undefined>();
 	const [selectedCourtId, setSelectedCourtId] = useState<string>('all');
 	const [showOnlyRecurring, setShowOnlyRecurring] = useState(false);
 
@@ -221,7 +206,7 @@ export default function BookingsPage() {
 
 					<Card className="mt-4 p-3 w-fit">
 						<div className="flex flex-col sm:flex-row gap-3">
-							<div>
+							{/* <div>
 								<label className="text-sm font-medium text-foreground mb-1 block">
 									Дата
 								</label>
@@ -260,7 +245,7 @@ export default function BookingsPage() {
 										/>
 									</PopoverContent>
 								</Popover>
-							</div>
+							</div> */}
 
 							<div>
 								<label className="text-sm font-medium text-foreground mb-1 block">
