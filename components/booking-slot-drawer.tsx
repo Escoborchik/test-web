@@ -1,8 +1,7 @@
 'use client';
 
-import { X, User, Clock, MapPin, Mail, Phone } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
 	Dialog,
 	DialogContent,
@@ -10,10 +9,12 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from '@/components/ui/dialog';
+import { Booking } from '@/types/booking';
+import { Clock, Mail, MapPin, Phone, User, X } from 'lucide-react';
 import { useState } from 'react';
 
 interface BookingSlotDrawerProps {
-	booking: any;
+	booking: Booking & { courtName: string };
 	open: boolean;
 	onClose: () => void;
 }
@@ -89,7 +90,7 @@ export function BookingSlotDrawer({
 								</div>
 								<div>
 									<p className="text-sm font-medium text-foreground">
-										{booking.client}
+										{booking.firstName} {booking.lastName}
 									</p>
 									<p className="text-xs text-muted-foreground">
 										Клиент
@@ -131,7 +132,7 @@ export function BookingSlotDrawer({
 								</div>
 								<div>
 									<p className="text-sm font-medium text-foreground">
-										{booking.court}
+										{booking.courtName}
 									</p>
 									<p className="text-xs text-muted-foreground">
 										Корт

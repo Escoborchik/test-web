@@ -38,6 +38,7 @@ export const CourtFormCreate = ({ onSave, onCancel }: CourtFormCreateProps) => {
 			weekdays: [],
 			weekends: [],
 		},
+		bookingIds: [],
 	});
 
 	const handleChangeData = <Field extends keyof Court>(
