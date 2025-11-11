@@ -1,5 +1,5 @@
 import { Court } from '@/types';
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSelector, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../store';
 
 interface CourtsManagmentState {
@@ -44,6 +44,7 @@ const initialState: CourtsManagmentState = {
 					},
 				],
 			},
+			bookingIds: ['booking-1'],
 		},
 		{
 			id: 'court-2',
@@ -81,6 +82,7 @@ const initialState: CourtsManagmentState = {
 					},
 				],
 			},
+			bookingIds: ['booking-2'],
 		},
 		{
 			id: 'court-3',
@@ -118,6 +120,7 @@ const initialState: CourtsManagmentState = {
 					},
 				],
 			},
+			bookingIds: ['booking-3'],
 		},
 	],
 };
@@ -165,6 +168,37 @@ export const { updateCourt, addCourt, updateVisible, deleteCourt } =
 	courtsManagmentSlice.actions;
 
 // selectors
-export const selectCourts = (state: RootState) => state.courtsManagment.courts;
+const selectCourtsState = (state: RootState) => state.courtsManagment;
+export const selectCourts = createSelector(
+	selectCourtsState,
+	(state) => state.courts
+);
+
+// const selectCourtsEntities = createSelector(selectCourtsState, ({ courts }) =>
+// 	courts.reduce<Record<string, Court>>((acc, court) => {
+// 		acc[court.id] = court;
+// 		return acc;
+// 	}, {})
+// );
+
+// const selectCourtId = (_: RootState, id: string) => id;
+
+// export const selectCourtById = createSelector(
+// 	[selectCourtsEntities, selectCourtId],
+// 	(entities, id) => {
+// 		const court = entities[id];
+// 		if (!court) {
+// 			throw new Error(`Court with id "${id}" not found`);
+// 		}
+// 		return court;
+// 	}
+// );
+
+const selectCourtIdParam = (_state: RootState, id: string) => id;
+
+export const selectCourtById = createSelector(
+	[selectCourts, selectCourtIdParam],
+	(courts, id) => courts.find((court) => court.id === id) ?? null
+);
 
 export default courtsManagmentSlice.reducer;

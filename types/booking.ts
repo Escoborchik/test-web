@@ -1,0 +1,26 @@
+export type ShortDays = 'Mon' | 'Tue' | 'Wed' | 'Thu' | 'Fri' | 'Sat' | 'Sun';
+
+export interface RecurringDetails {
+	startDate: string;
+	endDate: string;
+	weeks: number;
+	days: ShortDays[];
+}
+
+export type BookingStatus = 'rejected' | 'pending' | 'confirmed';
+
+export interface Booking {
+	id: string;
+	firstName: string;
+	lastName: string;
+	phone: string;
+	email: string;
+	courtId: string;
+	date: string;
+	time: string;
+	price: number;
+	status: BookingStatus;
+	isRecurring: boolean;
+
+	recurringDetails?: RecurringDetails;
+}

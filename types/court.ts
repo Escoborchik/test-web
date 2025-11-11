@@ -20,4 +20,5 @@ export interface Court {
 	street: string;
 	image: string;
 	prices: Record<'weekdays' | 'weekends', PriceSlot[]>;
+	bookingIds: string[];
 }
