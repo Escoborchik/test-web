@@ -14,7 +14,11 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from '@/components/ui/popover';
 import {
 	Select,
 	SelectContent,
@@ -25,9 +29,19 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { Booking } from '@/types/booking';
-import { Check, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { format } from 'date-fns';
+import { ru } from 'date-fns/locale';
+import {
+	CalendarIcon,
+	Check,
+	ChevronLeft,
+	ChevronRight,
+	X,
+} from 'lucide-react';
 import { useMemo, useState } from 'react';
 
+import { Calendar } from '@/components/ui/calendar';
+import { cn } from '@/lib/utils';
 import { updateStatusBooking } from '@/store/bookingsManagment';
 import { selectCourts } from '@/store/courtsManagment';
 
@@ -102,15 +116,34 @@ export default function BookingsPage() {
 		(state) => state.bookingsManagment.bookings
 	);
 	const courts = useAppSelector(selectCourts);
+	const [selectedDate, setSelectedDate] = useState<Date | undefined>();
+	const [selectedCourtId, setSelectedCourtId] = useState<string>('all');
+	const [showOnlyRecurring, setShowOnlyRecurring] = useState(false);
+
+	const filteredBookings = useMemo(() => {
+		return bookings.filter((booking) => {
+			const matchesCourt =
+				selectedCourtId === 'all' ||
+				booking.courtId === selectedCourtId;
+
+			const matchesRecurring = !showOnlyRecurring || booking.isRecurring;
+
+			return matchesCourt && matchesRecurring;
+		});
+	}, [bookings, selectedCourtId, showOnlyRecurring]);
 
 	const pendingBookings = useMemo(
-		() => bookings.filter((booking) => booking.status === 'pending'),
-		[bookings]
+		() =>
+			filteredBookings.filter((booking) => booking.status === 'pending'),
+		[filteredBookings]
 	);
 
 	const confirmedBookings = useMemo(
-		() => bookings.filter((booking) => booking.status === 'confirmed'),
-		[bookings]
+		() =>
+			filteredBookings.filter(
+				(booking) => booking.status === 'confirmed'
+			),
+		[filteredBookings]
 	);
 
 	const [selectedBooking, setSelectedBooking] = useState<any>(null);
@@ -192,31 +225,66 @@ export default function BookingsPage() {
 								<label className="text-sm font-medium text-foreground mb-1 block">
 									Дата
 								</label>
-								{/* <DatePicker /> */}
-								<Input type="date" className="w-fit h-9" />
+								<Popover>
+									<PopoverTrigger asChild>
+										<Button
+											variant="outline"
+											className={cn(
+												'group w-fit justify-start text-left font-normal',
+												!selectedDate &&
+													'text-muted-foreground'
+											)}
+										>
+											<CalendarIcon className="mr-2 h-4 w-4 text-accent transition-colors group-hover:text-primary" />
+											{selectedDate ? (
+												format(selectedDate, 'PPP', {
+													locale: ru,
+												})
+											) : (
+												<span>Выберите дату</span>
+											)}
+										</Button>
+									</PopoverTrigger>
+									<PopoverContent
+										className="w-auto p-0"
+										align="center"
+									>
+										<Calendar
+											mode="single"
+											selected={selectedDate}
+											onSelect={(date) =>
+												date && setSelectedDate(date)
+											}
+											initialFocus
+											locale={ru}
+										/>
+									</PopoverContent>
+								</Popover>
 							</div>
 
 							<div>
 								<label className="text-sm font-medium text-foreground mb-1 block">
 									Корт
 								</label>
-								<Select>
+								<Select
+									value={selectedCourtId}
+									onValueChange={setSelectedCourtId}
+								>
 									<SelectTrigger className="h-9">
-										<SelectValue placeholder="Все корты" />
+										<SelectValue />
 									</SelectTrigger>
 									<SelectContent>
 										<SelectItem value="all">
 											Все корты
 										</SelectItem>
-										<SelectItem value="court1">
-											Корт №1
-										</SelectItem>
-										<SelectItem value="court2">
-											Корт №2
-										</SelectItem>
-										<SelectItem value="court3">
-											Корт №3
-										</SelectItem>
+										{courts.map((court) => (
+											<SelectItem
+												key={court.id}
+												value={court.id}
+											>
+												{court.name}
+											</SelectItem>
+										))}
 									</SelectContent>
 								</Select>
 							</div>
@@ -225,7 +293,14 @@ export default function BookingsPage() {
 								<label className="text-sm font-medium text-foreground mb-1 block">
 									Тип брони
 								</label>
-								<Select defaultValue="one-time">
+								<Select
+									defaultValue="one-time"
+									onValueChange={(value) =>
+										value === 'one-time'
+											? setShowOnlyRecurring(false)
+											: setShowOnlyRecurring(true)
+									}
+								>
 									<SelectTrigger className="h-9">
 										<SelectValue />
 									</SelectTrigger>
