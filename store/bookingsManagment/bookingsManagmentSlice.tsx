@@ -96,6 +96,20 @@ const initialState: BookingManagmentState = {
 				days: ['Mon', 'Wed', 'Fri'],
 			},
 		},
+		{
+			id: 'booking-6',
+			firstName: 'Матвей',
+			lastName: 'Гусаров',
+			phone: '+7 (915) 111-77-88',
+			email: 'matvey.g@example.com',
+			courtId: 'court-3',
+			date: ['2025-11-25'],
+			time: '08:00-09:00',
+			duration: 2,
+			price: 3200,
+			status: 'pending-payment',
+			isRecurring: false,
+		},
 	],
 };
 
@@ -119,10 +133,27 @@ const bookingsManagmentSlice = createSlice({
 
 			if (rightBooking) rightBooking.status = action.payload.status;
 		},
+		deleteDateFromRecurringBooking: (
+			state,
+			action: PayloadAction<{ id: string; date: string }>
+		) => {
+			const rightBooking = state.bookings.find(
+				(booking) => booking.id === action.payload.id
+			);
+
+			if (rightBooking?.date) {
+				const index = rightBooking.date.indexOf(action.payload.date);
+
+				if (index !== -1) rightBooking.date.splice(index, 1);
+			}
+		},
 	},
 });
 
-export const { createBooking, updateStatusBooking } =
-	bookingsManagmentSlice.actions;
+export const {
+	createBooking,
+	updateStatusBooking,
+	deleteDateFromRecurringBooking,
+} = bookingsManagmentSlice.actions;
 
 export default bookingsManagmentSlice.reducer;

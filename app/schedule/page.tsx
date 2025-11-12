@@ -216,6 +216,7 @@ export default function SchedulePage() {
 		const bookings = bookingsForShedule[dateStr]?.[courtId] || [];
 
 		for (const booking of bookings) {
+			if (booking.status === 'rejected') continue;
 			const bookingStartTime = booking.time.split('-')[0];
 
 			const bookingStartMinutes =
@@ -514,7 +515,10 @@ export default function SchedulePage() {
 																bookingInfo.status ===
 																	'confirmed'
 																	? 'bg-[#1E7A4C]/20 hover:bg-[#1E7A4C]/30 border border-[#1E7A4C]/40'
-																	: 'bg-[#E6B800]/20 hover:bg-[#E6B800]/30 border border-[#E6B800]/40'
+																	: bookingInfo.status ===
+																	  'pending'
+																	? 'bg-[#E6B800]/20 hover:bg-[#E6B800]/30 border border-[#E6B800]/40'
+																	: 'bg-gray-400 hover:bg-gray-500'
 															)}
 															style={{
 																height: `${

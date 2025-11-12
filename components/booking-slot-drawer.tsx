@@ -10,8 +10,14 @@ import {
 	DialogTitle,
 } from '@/components/ui/dialog';
 import { COVER_TYPE_LABELS, RuShortDays, SPORT_TYPE_LABELS } from '@/constants';
+import { useAppDispatch } from '@/store';
+import {
+	deleteDateFromRecurringBooking,
+	updateStatusBooking,
+} from '@/store/bookingsManagment';
 import { CoverType, SportType } from '@/types';
 import { Booking, ShortDays } from '@/types/booking';
+import { format } from 'date-fns';
 import {
 	Calendar,
 	Clock,
@@ -45,6 +51,13 @@ export function BookingSlotDrawer({
 	open,
 	onClose,
 }: BookingSlotDrawerProps) {
+	const dispatch = useAppDispatch();
+	const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+	const handleConfirm = () => {
+		dispatch(updateStatusBooking({ id: booking.id, status: 'confirmed' }));
+		setConfirmDialogOpen(true);
+	};
+
 	const refundHour = 24;
 	const totalSessions = useMemo(() => {
 		if (booking?.recurringDetails)
@@ -582,6 +595,14 @@ export function BookingSlotDrawer({
 					</div>
 
 					<div className="p-6 border-t border-border space-y-3">
+						{booking.status === 'pending' && (
+							<Button
+								onClick={handleConfirm}
+								className="w-full bg-[#1E7A4C] hover:bg-[#1E7A4C]/90 text-white"
+							>
+								Подтвердить бронирование
+							</Button>
+						)}
 						<Button
 							variant="destructive"
 							className="w-full"
@@ -601,6 +622,45 @@ export function BookingSlotDrawer({
 					</div>
 				</div>
 			</div>
+
+			{/* Confirm Dialog */}
+			<Dialog
+				open={confirmDialogOpen}
+				onOpenChange={setConfirmDialogOpen}
+			>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>Подтвердить бронирование?</DialogTitle>
+						<DialogDescription>
+							Вы уверены, что хотите подтвердить это бронирование?
+							Клиент получит уведомление.
+						</DialogDescription>
+					</DialogHeader>
+					<div className="flex gap-3 justify-end mt-4">
+						<Button
+							variant="outline"
+							onClick={() => setConfirmDialogOpen(false)}
+						>
+							Отмена
+						</Button>
+						<Button
+							className="bg-[#1E7A4C] hover:bg-[#1E7A4C]/90 text-white"
+							onClick={() => {
+								dispatch(
+									updateStatusBooking({
+										id: booking.id,
+										status: 'confirmed',
+									})
+								);
+								setConfirmDialogOpen(false);
+								onClose();
+							}}
+						>
+							Подтвердить
+						</Button>
+					</div>
+				</DialogContent>
+			</Dialog>
 
 			{/* Cancel Current Dialog */}
 			<Dialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
@@ -622,6 +682,25 @@ export function BookingSlotDrawer({
 						<Button
 							variant="destructive"
 							onClick={() => {
+								if (booking.isRecurring) {
+									dispatch(
+										deleteDateFromRecurringBooking({
+											id: booking.id,
+											date: format(
+												booking.currentDate,
+												'yyyy-MM-dd'
+											),
+										})
+									);
+								} else {
+									dispatch(
+										updateStatusBooking({
+											id: booking.id,
+											status: 'rejected',
+										})
+									);
+								}
+
 								setCancelDialogOpen(false);
 								onClose();
 							}}
@@ -655,6 +734,12 @@ export function BookingSlotDrawer({
 						<Button
 							variant="destructive"
 							onClick={() => {
+								dispatch(
+									updateStatusBooking({
+										id: booking.id,
+										status: 'rejected',
+									})
+								);
 								setCancelAllDialogOpen(false);
 								onClose();
 							}}

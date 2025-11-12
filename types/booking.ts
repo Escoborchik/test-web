@@ -7,7 +7,11 @@ export interface RecurringDetails {
 	days: ShortDays[];
 }
 
-export type BookingStatus = 'rejected' | 'pending' | 'confirmed';
+export type BookingStatus =
+	| 'rejected'
+	| 'pending'
+	| 'confirmed'
+	| 'pending-payment';
 
 export interface Booking {
 	id: string;
