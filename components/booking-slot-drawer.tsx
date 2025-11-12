@@ -9,12 +9,27 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from '@/components/ui/dialog';
-import { Booking } from '@/types/booking';
-import { Clock, Mail, MapPin, Phone, User, X } from 'lucide-react';
-import { useState } from 'react';
+import { RuShortDays } from '@/constants';
+import { Booking, ShortDays } from '@/types/booking';
+import {
+	Calendar,
+	Clock,
+	Mail,
+	Phone,
+	Repeat,
+	RussianRuble,
+	User,
+	X,
+} from 'lucide-react';
+import { useMemo, useState } from 'react';
+
+type BookingWithContext = Booking & {
+	courtName: string;
+	currentDate: Date;
+};
 
 interface BookingSlotDrawerProps {
-	booking: Booking & { courtName: string };
+	booking: BookingWithContext;
 	open: boolean;
 	onClose: () => void;
 }
@@ -24,6 +39,66 @@ export function BookingSlotDrawer({
 	open,
 	onClose,
 }: BookingSlotDrawerProps) {
+	const refundHour = 24;
+	const totalSessions = useMemo(() => {
+		if (booking?.recurringDetails)
+			return (
+				booking.recurringDetails.weeks *
+				booking.recurringDetails.days.length
+			);
+		return null;
+	}, [booking?.recurringDetails]);
+
+	const remainingSessions = useMemo(() => {
+		if (!booking?.isRecurring || !booking.recurringDetails) return null;
+
+		const { startDate, endDate, days } = booking.recurringDetails;
+		if (!startDate || !endDate || !days?.length) return null;
+
+		const shortDayMap: ShortDays[] = [
+			'Mon',
+			'Tue',
+			'Wed',
+			'Thu',
+			'Fri',
+			'Sat',
+			'Sun',
+		];
+
+		const start = new Date(startDate);
+		const end = new Date(endDate);
+		const current = new Date(booking.currentDate);
+
+		if (
+			Number.isNaN(start.getTime()) ||
+			Number.isNaN(end.getTime()) ||
+			Number.isNaN(current.getTime())
+		)
+			return null;
+
+		start.setHours(0, 0, 0, 0);
+		end.setHours(0, 0, 0, 0);
+		current.setHours(0, 0, 0, 0);
+
+		if (current > end) return 0;
+
+		const effectiveStart =
+			current > start ? new Date(current) : new Date(start);
+		const daySet = new Set<ShortDays>(days);
+
+		let remaining = 0;
+		for (
+			let cursor = new Date(effectiveStart);
+			cursor <= end;
+			cursor.setDate(cursor.getDate() + 1)
+		) {
+			const dayKey = shortDayMap[cursor.getDay()];
+			if (daySet.has(dayKey)) remaining += 1;
+		}
+
+		return remaining;
+	}, [booking]);
+
 	const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
 	const [cancelAllDialogOpen, setCancelAllDialogOpen] = useState(false);
 
@@ -83,96 +158,294 @@ export function BookingSlotDrawer({
 							</Badge>
 						)}
 
-						<div className="space-y-4">
-							<div className="flex items-center gap-3">
-								<div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center">
-									<User className="h-5 w-5 text-accent" />
+						<div className="space-y-3">
+							<h3 className="text-sm font-semibold text-primary">
+								Информация о клиенте
+							</h3>
+							<div className="space-y-3 p-3 bg-accent/5 rounded-lg border border-accent/20">
+								<div className="flex items-center gap-3">
+									<div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0">
+										<User className="h-5 w-5 text-accent" />
+									</div>
+									<div className="flex-1 min-w-0">
+										<p className="text-sm font-medium text-foreground">
+											{booking.lastName}{' '}
+											{booking.firstName}
+										</p>
+										<p className="text-xs text-muted-foreground">
+											Имя клиента
+										</p>
+									</div>
 								</div>
-								<div>
-									<p className="text-sm font-medium text-foreground">
-										{booking.firstName} {booking.lastName}
-									</p>
-									<p className="text-xs text-muted-foreground">
-										Клиент
-									</p>
-								</div>
-							</div>
 
-							<div className="flex items-center gap-3">
-								<div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-									<Phone className="h-5 w-5 text-primary" />
+								<div className="flex items-center gap-3">
+									<div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+										<Phone className="h-5 w-5 text-primary" />
+									</div>
+									<div className="flex-1 min-w-0">
+										<p className="text-sm font-medium text-foreground">
+											{booking.phone}
+										</p>
+										<p className="text-xs text-muted-foreground">
+											Телефон
+										</p>
+									</div>
 								</div>
-								<div>
-									<p className="text-sm font-medium text-foreground">
-										+7 (999) 123-45-67
-									</p>
-									<p className="text-xs text-muted-foreground">
-										Телефон
-									</p>
-								</div>
-							</div>
 
-							<div className="flex items-center gap-3">
-								<div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-									<Mail className="h-5 w-5 text-primary" />
-								</div>
-								<div>
-									<p className="text-sm font-medium text-foreground">
-										client@example.com
-									</p>
-									<p className="text-xs text-muted-foreground">
-										Email
-									</p>
-								</div>
-							</div>
-
-							<div className="flex items-center gap-3">
-								<div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-									<MapPin className="h-5 w-5 text-primary" />
-								</div>
-								<div>
-									<p className="text-sm font-medium text-foreground">
-										{booking.courtName}
-									</p>
-									<p className="text-xs text-muted-foreground">
-										Корт
-									</p>
-								</div>
-							</div>
-
-							<div className="flex items-center gap-3">
-								<div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-									<Clock className="h-5 w-5 text-primary" />
-								</div>
-								<div>
-									<p className="text-sm font-medium text-foreground">
-										{booking.time}
-									</p>
-									<p className="text-xs text-muted-foreground">
-										Время бронирования
-									</p>
+								<div className="flex items-center gap-3">
+									<div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+										<Mail className="h-5 w-5 text-primary" />
+									</div>
+									<div className="flex-1 min-w-0">
+										<p className="text-sm font-medium text-foreground break-all">
+											{booking.email}
+										</p>
+										<p className="text-xs text-muted-foreground">
+											Email
+										</p>
+									</div>
 								</div>
 							</div>
 						</div>
-					</div>
 
-					<div className="p-6 border-t border-border space-y-3">
-						<Button
-							variant="destructive"
-							className="w-full"
-							onClick={() => setCancelDialogOpen(true)}
-						>
-							Отменить текущее
-						</Button>
-						{booking.isRecurring && (
+						{/* Booking Information Section */}
+						<div className="space-y-3">
+							<h3 className="text-sm font-semibold text-primary">
+								Информация о бронировании
+							</h3>
+							<div className="space-y-3 p-3 bg-accent/5 rounded-lg border border-accent/20">
+								<div className="flex items-center gap-3">
+									<div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+										<Clock className="h-5 w-5 text-primary" />
+									</div>
+									<div className="flex-1 min-w-0">
+										<p className="text-sm font-medium text-foreground">
+											{booking.time}
+										</p>
+										<p className="text-xs text-muted-foreground">
+											Время бронирования (
+											{booking.duration} ч)
+										</p>
+									</div>
+								</div>
+
+								{booking.date && !booking.isRecurring && (
+									<div className="flex items-center gap-3">
+										<div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+											<Calendar className="h-5 w-5 text-primary" />
+										</div>
+										<div className="flex-1 min-w-0">
+											<p className="text-sm font-medium text-foreground">
+												{new Date(
+													booking.date[0]
+												).toLocaleDateString('ru-RU', {
+													day: 'numeric',
+													month: 'long',
+													year: 'numeric',
+												})}
+											</p>
+											<p className="text-xs text-muted-foreground">
+												Дата бронирования
+											</p>
+										</div>
+									</div>
+								)}
+
+								{!booking.isRecurring && booking.price && (
+									<div className="flex items-center gap-3">
+										<div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0">
+											<RussianRuble className="h-5 w-5 text-accent" />
+										</div>
+										<div className="flex-1 min-w-0">
+											<p className="text-sm font-medium text-foreground">
+												{booking.price} ₽
+											</p>
+											<p className="text-xs text-muted-foreground">
+												Цена
+											</p>
+										</div>
+									</div>
+								)}
+
+								{booking.isRecurring && (
+									<>
+										<div className="pt-2 border-t border-accent/20">
+											<div className="flex items-start gap-3 mb-3">
+												<div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0">
+													<Repeat className="h-5 w-5 text-accent" />
+												</div>
+												<div className="flex-1 min-w-0">
+													<p className="text-sm font-semibold text-accent mb-1">
+														Повторяющееся
+														бронирование
+													</p>
+												</div>
+											</div>
+
+											<div className="space-y-2.5 pl-1">
+												{booking.price && (
+													<div className="flex items-center gap-3">
+														<div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+															<RussianRuble className="h-4 w-4 text-primary" />
+														</div>
+														<div className="flex-1 min-w-0">
+															<p className="text-sm font-medium text-foreground">
+																{booking.price}{' '}
+																₽
+															</p>
+															<p className="text-xs text-muted-foreground">
+																Цена за одно
+																занятие
+															</p>
+														</div>
+													</div>
+												)}
+
+												{booking.recurringDetails!
+													.startDate && (
+													<div className="flex items-center gap-3">
+														<div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+															<Calendar className="h-4 w-4 text-primary" />
+														</div>
+														<div className="flex-1 min-w-0">
+															<p className="text-sm font-medium text-foreground">
+																{new Date(
+																	booking.recurringDetails!.startDate
+																).toLocaleDateString(
+																	'ru-RU',
+																	{
+																		day: 'numeric',
+																		month: 'long',
+																		year: 'numeric',
+																	}
+																)}
+															</p>
+															<p className="text-xs text-muted-foreground">
+																Дата начала
+															</p>
+														</div>
+													</div>
+												)}
+
+												{booking.recurringDetails!
+													.endDate && (
+													<div className="flex items-center gap-3">
+														<div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+															<Calendar className="h-4 w-4 text-primary" />
+														</div>
+														<div className="flex-1 min-w-0">
+															<p className="text-sm font-medium text-foreground">
+																{new Date(
+																	booking.recurringDetails!.endDate
+																).toLocaleDateString(
+																	'ru-RU',
+																	{
+																		day: 'numeric',
+																		month: 'long',
+																		year: 'numeric',
+																	}
+																)}
+															</p>
+															<p className="text-xs text-muted-foreground">
+																Дата окончания
+															</p>
+														</div>
+													</div>
+												)}
+
+												{booking.recurringDetails!
+													.days &&
+													booking.recurringDetails!
+														.days.length > 0 && (
+														<div className="p-2 bg-muted/50 rounded">
+															<p className="text-xs text-muted-foreground mb-1">
+																Дни недели
+															</p>
+															<div className="flex flex-wrap gap-1">
+																{booking.recurringDetails!.days.map(
+																	(
+																		day: ShortDays
+																	) => (
+																		<Badge
+																			key={
+																				day
+																			}
+																			variant="outline"
+																			className="text-xs bg-accent/10 border-accent/30 text-accent"
+																		>
+																			{
+																				RuShortDays[
+																					day
+																				]
+																			}
+																		</Badge>
+																	)
+																)}
+															</div>
+														</div>
+													)}
+
+												{totalSessions !== null && (
+													<div className="grid grid-cols-2 gap-2">
+														<div className="p-2 bg-muted/50 rounded">
+															<p className="text-xs text-muted-foreground">
+																Всего занятий
+															</p>
+															<p className="text-sm font-medium text-foreground mt-0.5">
+																{totalSessions}
+															</p>
+														</div>
+														<div className="p-2 bg-primary/10 rounded">
+															<p className="text-xs text-muted-foreground">
+																Осталось
+															</p>
+															<p className="text-sm font-medium text-primary mt-0.5">
+																{remainingSessions ??
+																	'—'}
+															</p>
+														</div>
+													</div>
+												)}
+
+												{/* {booking.pricePerSession &&
+													remainingSessions > 0 && (
+														<div className="p-2.5 bg-accent/10 rounded border border-accent/30">
+															<p className="text-xs text-muted-foreground mb-1">
+																Цена за
+																оставшиеся
+																занятия
+															</p>
+															<p className="text-base font-semibold text-accent">
+																{remainingPrice.toLocaleString()}{' '}
+																₽
+															</p>
+														</div>
+													)} */}
+											</div>
+										</div>
+									</>
+								)}
+							</div>
+						</div>
+
+						<div className="p-6 border-t border-border space-y-3">
 							<Button
-								variant="outline"
-								className="w-full text-destructive hover:text-destructive bg-transparent"
-								onClick={() => setCancelAllDialogOpen(true)}
+								variant="destructive"
+								className="w-full"
+								onClick={() => setCancelDialogOpen(true)}
 							>
-								Отменить все повторения
+								Отменить текущее
 							</Button>
-						)}
+							{booking.isRecurring && (
+								<Button
+									variant="outline"
+									className="w-full text-destructive hover:text-destructive bg-transparent"
+									onClick={() => setCancelAllDialogOpen(true)}
+								>
+									Отменить все повторения
+								</Button>
+							)}
+						</div>
 					</div>
 				</div>
 			</div>
