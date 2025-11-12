@@ -16,7 +16,7 @@ export interface Booking {
 	phone: string;
 	email: string;
 	courtId: string;
-	date: string;
+	date: string[];
 	time: string;
 	duration: number;
 	price: number;

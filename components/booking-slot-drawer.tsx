@@ -9,12 +9,14 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from '@/components/ui/dialog';
-import { RuShortDays } from '@/constants';
+import { COVER_TYPE_LABELS, RuShortDays, SPORT_TYPE_LABELS } from '@/constants';
+import { CoverType, SportType } from '@/types';
 import { Booking, ShortDays } from '@/types/booking';
 import {
 	Calendar,
 	Clock,
 	Mail,
+	MapPin,
 	Phone,
 	Repeat,
 	RussianRuble,
@@ -25,6 +27,10 @@ import { useMemo, useState } from 'react';
 
 type BookingWithContext = Booking & {
 	courtName: string;
+	coverType: CoverType;
+	sportType: SportType;
+	isIndoor: boolean;
+	street: string;
 	currentDate: Date;
 };
 
@@ -50,24 +56,26 @@ export function BookingSlotDrawer({
 	}, [booking?.recurringDetails]);
 
 	const remainingSessions = useMemo(() => {
-		if (!booking?.isRecurring || !booking.recurringDetails) return null;
+		if (!booking?.isRecurring || !booking.recurringDetails || !booking.time)
+			return null;
 
 		const { startDate, endDate, days } = booking.recurringDetails;
-		if (!startDate || !endDate || !days?.length) return null;
+		if (!startDate || !endDate || !days.length) return null;
 
 		const shortDayMap: ShortDays[] = [
+			'Sun',
 			'Mon',
 			'Tue',
 			'Wed',
 			'Thu',
 			'Fri',
 			'Sat',
-			'Sun',
 		];
 
 		const start = new Date(startDate);
 		const end = new Date(endDate);
 		const current = new Date(booking.currentDate);
+		const now = new Date();
 
 		if (
 			Number.isNaN(start.getTime()) ||
@@ -80,24 +88,89 @@ export function BookingSlotDrawer({
 		end.setHours(0, 0, 0, 0);
 		current.setHours(0, 0, 0, 0);
 
-		if (current > end) return 0;
+		now.setHours(0, 0, 0, 0);
 
-		const effectiveStart =
-			current > start ? new Date(current) : new Date(start);
+		const iterationStart = current > start ? current : start;
+		const loopStart = iterationStart > now ? iterationStart : now;
+
+		if (loopStart > end) return 0;
+
+		const [startTime] = booking.time.split('-');
+		const [startHour, startMinute] = startTime.split(':').map(Number);
+		if (Number.isNaN(startHour) || Number.isNaN(startMinute)) return null;
+
 		const daySet = new Set<ShortDays>(days);
+		const refundWindowMs = refundHour * 60 * 60 * 1000;
 
 		let remaining = 0;
+
 		for (
-			let cursor = new Date(effectiveStart);
+			let cursor = new Date(loopStart);
 			cursor <= end;
 			cursor.setDate(cursor.getDate() + 1)
 		) {
 			const dayKey = shortDayMap[cursor.getDay()];
-			if (daySet.has(dayKey)) remaining += 1;
+			if (!daySet.has(dayKey)) continue;
+
+			const sessionStart = new Date(cursor);
+			sessionStart.setHours(startHour, startMinute, 0, 0);
+
+			const diffMs = sessionStart.getTime() - now.getTime();
+			if (diffMs >= refundWindowMs) remaining += 1;
 		}
 
 		return remaining;
 	}, [booking]);
+
+	// const remainingSessions = useMemo(() => {
+	// 	if (!booking?.isRecurring || !booking.recurringDetails) return null;
+
+	// 	const { startDate, endDate, days } = booking.recurringDetails;
+	// 	if (!startDate || !endDate || !days?.length) return null;
+
+	// 	const shortDayMap: ShortDays[] = [
+	// 		'Mon',
+	// 		'Tue',
+	// 		'Wed',
+	// 		'Thu',
+	// 		'Fri',
+	// 		'Sat',
+	// 		'Sun',
+	// 	];
+
+	// 	const start = new Date(startDate);
+	// 	const end = new Date(endDate);
+	// 	const current = new Date(booking.currentDate);
+
+	// 	if (
+	// 		Number.isNaN(start.getTime()) ||
+	// 		Number.isNaN(end.getTime()) ||
+	// 		Number.isNaN(current.getTime())
+	// 	)
+	// 		return null;
+
+	// 	start.setHours(0, 0, 0, 0);
+	// 	end.setHours(0, 0, 0, 0);
+	// 	current.setHours(0, 0, 0, 0);
+
+	// 	if (current > end) return 0;
+
+	// 	const effectiveStart =
+	// 		current > start ? new Date(current) : new Date(start);
+	// 	const daySet = new Set<ShortDays>(days);
+
+	// 	let remaining = 0;
+	// 	for (
+	// 		let cursor = new Date(effectiveStart);
+	// 		cursor <= end;
+	// 		cursor.setDate(cursor.getDate() + 1)
+	// 	) {
+	// 		const dayKey = shortDayMap[cursor.getDay()];
+	// 		if (daySet.has(dayKey)) remaining += 1;
+	// 	}
+
+	// 	return remaining;
+	// }, [booking]);
 
 	const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
 	const [cancelAllDialogOpen, setCancelAllDialogOpen] = useState(false);
@@ -407,7 +480,8 @@ export function BookingSlotDrawer({
 													</div>
 												)}
 
-												{/* {booking.pricePerSession &&
+												{booking.price &&
+													remainingSessions &&
 													remainingSessions > 0 && (
 														<div className="p-2.5 bg-accent/10 rounded border border-accent/30">
 															<p className="text-xs text-muted-foreground mb-1">
@@ -416,11 +490,14 @@ export function BookingSlotDrawer({
 																занятия
 															</p>
 															<p className="text-base font-semibold text-accent">
-																{remainingPrice.toLocaleString()}{' '}
+																{(
+																	booking.price *
+																	remainingSessions
+																).toLocaleString()}{' '}
 																₽
 															</p>
 														</div>
-													)} */}
+													)}
 											</div>
 										</div>
 									</>
@@ -428,24 +505,99 @@ export function BookingSlotDrawer({
 							</div>
 						</div>
 
-						<div className="p-6 border-t border-border space-y-3">
-							<Button
-								variant="destructive"
-								className="w-full"
-								onClick={() => setCancelDialogOpen(true)}
-							>
-								Отменить текущее
-							</Button>
-							{booking.isRecurring && (
-								<Button
-									variant="outline"
-									className="w-full text-destructive hover:text-destructive bg-transparent"
-									onClick={() => setCancelAllDialogOpen(true)}
-								>
-									Отменить все повторения
-								</Button>
-							)}
+						{/* Court Information Section */}
+						<div className="space-y-3">
+							<h3 className="text-sm font-semibold text-primary">
+								Информация о корте
+							</h3>
+							<div className="space-y-3 p-3 bg-accent/5 rounded-lg border border-accent/20">
+								<div className="flex items-center gap-3">
+									<div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+										<MapPin className="h-5 w-5 text-primary" />
+									</div>
+									<div className="flex-1 min-w-0">
+										<p className="text-sm font-medium text-foreground">
+											{booking.courtName}
+										</p>
+										<p className="text-xs text-muted-foreground">
+											Название корта
+										</p>
+									</div>
+								</div>
+
+								{booking.coverType && (
+									<div className="grid grid-cols-2 gap-2 text-sm">
+										<div className="p-2 bg-muted/50 rounded">
+											<p className="text-xs text-muted-foreground">
+												Тип поверхности
+											</p>
+											<p className="font-medium text-foreground mt-0.5">
+												{
+													COVER_TYPE_LABELS[
+														booking.coverType
+													]
+												}
+											</p>
+										</div>
+										<div className="p-2 bg-muted/50 rounded">
+											<p className="text-xs text-muted-foreground">
+												Тип корта
+											</p>
+											<p className="font-medium text-foreground mt-0.5">
+												{booking.isIndoor
+													? 'Открытый'
+													: 'Закрытый'}
+											</p>
+										</div>
+									</div>
+								)}
+
+								{booking.sportType && (
+									<div className="p-2 bg-muted/50 rounded">
+										<p className="text-xs text-muted-foreground">
+											Вид спорта
+										</p>
+										<p className="text-sm font-medium text-foreground mt-0.5">
+											{
+												SPORT_TYPE_LABELS[
+													booking.sportType
+												]
+											}
+										</p>
+									</div>
+								)}
+
+								{booking.street && (
+									<div className="p-2 bg-muted/50 rounded">
+										<p className="text-xs text-muted-foreground">
+											Улица
+										</p>
+										<p className="text-sm font-medium text-foreground mt-0.5">
+											{booking.street}
+										</p>
+									</div>
+								)}
+							</div>
 						</div>
+					</div>
+
+					<div className="p-6 border-t border-border space-y-3">
+						<Button
+							variant="destructive"
+							className="w-full"
+							onClick={() => setCancelDialogOpen(true)}
+						>
+							Отменить текущее
+						</Button>
+						{booking.isRecurring && (
+							<Button
+								variant="outline"
+								className="w-full text-destructive hover:text-destructive bg-transparent"
+								onClick={() => setCancelAllDialogOpen(true)}
+							>
+								Отменить все повторения
+							</Button>
+						)}
 					</div>
 				</div>
 			</div>

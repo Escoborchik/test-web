@@ -23,6 +23,7 @@ import { SPORT_TYPE_LABELS } from '@/constants';
 import { cn } from '@/lib/utils';
 import { useAppSelector } from '@/store';
 import { selectCourts } from '@/store/courtsManagment';
+import { Court } from '@/types';
 import { Booking } from '@/types/booking';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
@@ -164,14 +165,15 @@ export default function SchedulePage() {
 		() =>
 			bookings.reduce<Record<string, Record<string, Booking[]>>>(
 				(acc, booking) => {
-					if (!acc[booking.date]) {
-						acc[booking.date] = {};
-					}
-					if (!acc[booking.date][booking.courtId]) {
-						acc[booking.date][booking.courtId] = [];
-					}
-					acc[booking.date][booking.courtId].push(booking);
-
+					booking.date.forEach((date) => {
+						if (!acc[date]) {
+							acc[date] = {};
+						}
+						if (!acc[date][booking.courtId]) {
+							acc[date][booking.courtId] = [];
+						}
+						acc[date][booking.courtId].push(booking);
+					});
 					return acc;
 				},
 				{}
@@ -246,7 +248,7 @@ export default function SchedulePage() {
 		setSelectedDate(date);
 	};
 
-	const handleSlotClick = (courtId: string, time: string, court: any) => {
+	const handleSlotClick = (courtId: string, time: string, court: Court) => {
 		const bookingInfo = getBookingForSlot(courtId, time);
 		if (bookingInfo) {
 			const startMinutes =
@@ -262,9 +264,14 @@ export default function SchedulePage() {
 			setSelectedSlot({
 				...bookingInfo,
 				courtName: court.name,
+				coverType: court.coverType,
+				sportType: court.sportType,
+				isIndoor: court.isIndoor,
+				street: court.street,
 				time: bookingInfo.time,
 				endTime,
 				courtId: court.id,
+				currentDate: selectedDate,
 			});
 			setBookingSlotDrawerOpen(true);
 		} else {

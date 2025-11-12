@@ -385,7 +385,7 @@ export default function BookingsPage() {
 													</td>
 													<td className="p-3 text-sm text-foreground">
 														{new Date(
-															booking.date
+															booking.date[0]
 														).toLocaleDateString(
 															'ru-RU'
 														)}
@@ -538,7 +538,7 @@ export default function BookingsPage() {
 													</td>
 													<td className="p-4 text-sm text-foreground">
 														{new Date(
-															booking.date
+															booking.date[0]
 														).toLocaleDateString(
 															'ru-RU'
 														)}
