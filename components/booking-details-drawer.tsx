@@ -55,12 +55,10 @@ export function BookingDetailsDrawer({
 	if (!booking) return null;
 
 	const handleConfirm = () => {
-		dispatch(updateStatusBooking({ id: booking.id, status: 'confirmed' }));
 		setConfirmDialogOpen(true);
 	};
 
 	const handleReject = () => {
-		dispatch(updateStatusBooking({ id: booking.id, status: 'rejected' }));
 		setRejectDialogOpen(true);
 	};
 
@@ -327,6 +325,12 @@ export function BookingDetailsDrawer({
 						<Button
 							className="bg-[#1E7A4C] hover:bg-[#1E7A4C]/90 text-white"
 							onClick={() => {
+								dispatch(
+									updateStatusBooking({
+										id: booking.id,
+										status: 'confirmed',
+									})
+								);
 								setConfirmDialogOpen(false);
 								onClose();
 							}}
@@ -357,6 +361,12 @@ export function BookingDetailsDrawer({
 						<Button
 							variant="destructive"
 							onClick={() => {
+								dispatch(
+									updateStatusBooking({
+										id: booking.id,
+										status: 'rejected',
+									})
+								);
 								setRejectDialogOpen(false);
 								onClose();
 							}}
