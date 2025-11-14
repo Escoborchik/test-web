@@ -243,7 +243,7 @@ export default function SchedulePage() {
 
 			return null;
 		},
-		[bookingsForShedule]
+		[selectedDate, bookingsForShedule]
 	);
 
 	const changeDate = (days: number) => {
