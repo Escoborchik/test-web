@@ -34,9 +34,19 @@ const timeSlots = Array.from({ length: 30 }, (_, i) => {
 	const totalMinutes = 8 * 60 + i * 30;
 	const hour = Math.floor(totalMinutes / 60);
 	const minute = totalMinutes % 60;
-	return `${hour.toString().padStart(2, '0')}:${minute
+
+	const startTime = `${hour.toString().padStart(2, '0')}:${minute
 		.toString()
 		.padStart(2, '0')}`;
+
+	const endTotalMinutes = totalMinutes + 30;
+	const endHour = Math.floor(endTotalMinutes / 60);
+	const endMinute = endTotalMinutes % 60;
+	const endTime = `${endHour.toString().padStart(2, '0')}:${endMinute
+		.toString()
+		.padStart(2, '0')}`;
+
+	return { display: `${startTime} - ${endTime}`, value: startTime };
 });
 
 export default function SchedulePage() {
@@ -354,7 +364,7 @@ export default function SchedulePage() {
 					<div className="overflow-x-auto">
 						<div className="min-w-[800px]">
 							<div className="flex border-b border-border bg-secondary">
-								<div className="w-20 p-2 font-semibold text-sm text-primary sticky left-0 bg-secondary z-10">
+								<div className="w-32 p-2 font-semibold text-sm text-primary sticky left-0 bg-secondary z-10">
 									Время
 								</div>
 								{filteredCourts.map((court) => (
@@ -379,82 +389,86 @@ export default function SchedulePage() {
 							</div>
 
 							<div className="relative">
-								{timeSlots.map((time, timeIndex) => (
-									<div
-										key={time}
-										className="flex border-b border-border h-8"
-									>
-										<div className="w-20 p-2 text-xs font-medium text-muted-foreground sticky left-0 bg-card z-10 border-r border-border flex items-center">
-											{time}
-										</div>
+								{timeSlots.map((timeSlot, timeIndex) => {
+									const time = timeSlot.value;
 
-										{filteredCourts.map((court) => {
-											const bookingInfo =
-												getBookingForSlot(
-													court.id,
-													time
+									return (
+										<div
+											key={time}
+											className="flex border-b border-border h-8"
+										>
+											<div className="w-32 px-2 py-1 text-xs font-medium text-muted-foreground sticky left-0 bg-card z-10 border-r border-border flex items-center">
+												{timeSlot.display}
+											</div>
+
+											{filteredCourts.map((court) => {
+												const bookingInfo =
+													getBookingForSlot(
+														court.id,
+														time
+													);
+
+												return (
+													<div
+														key={`${court.id}-${time}`}
+														className="flex-1 border-l border-border min-w-[120px] relative"
+													>
+														{bookingInfo &&
+														bookingInfo.isStart ? (
+															<div
+																className={cn(
+																	'absolute inset-0 m-0.5 rounded px-2 flex items-center justify-center transition-colors cursor-pointer z-10',
+																	bookingInfo.status ===
+																		'confirmed'
+																		? 'bg-[#1E7A4C]/20 hover:bg-[#1E7A4C]/30 border border-[#1E7A4C]/40'
+																		: bookingInfo.status ===
+																		  'pending'
+																		? 'bg-[#E6B800]/20 hover:bg-[#E6B800]/30 border border-[#E6B800]/40'
+																		: 'bg-gray-400 hover:bg-gray-500'
+																)}
+																style={{
+																	height: `${
+																		bookingInfo.slotCount *
+																			32 -
+																		1
+																	}px`,
+																}}
+																onClick={() =>
+																	handleSlotClick(
+																		court.id,
+																		time,
+																		court
+																	)
+																}
+															>
+																<p className="text-xs font-medium text-foreground truncate">
+																	{bookingInfo.lastName +
+																		' ' +
+																		bookingInfo
+																			.firstName[0] +
+																		'.'}
+																</p>
+															</div>
+														) : !bookingInfo ? (
+															<div
+																className="h-full cursor-pointer"
+																onClick={() =>
+																	handleSlotClick(
+																		court.id,
+																		time,
+																		court
+																	)
+																}
+															>
+																<div className="h-full m-0.5 rounded hover:bg-accent/10 transition-colors" />
+															</div>
+														) : null}
+													</div>
 												);
-
-											return (
-												<div
-													key={`${court.id}-${time}`}
-													className="flex-1 border-l border-border min-w-[120px] relative"
-												>
-													{bookingInfo &&
-													bookingInfo.isStart ? (
-														<div
-															className={cn(
-																'absolute inset-0 m-0.5 rounded px-2 flex items-center justify-center transition-colors cursor-pointer z-10',
-																bookingInfo.status ===
-																	'confirmed'
-																	? 'bg-[#1E7A4C]/20 hover:bg-[#1E7A4C]/30 border border-[#1E7A4C]/40'
-																	: bookingInfo.status ===
-																	  'pending'
-																	? 'bg-[#E6B800]/20 hover:bg-[#E6B800]/30 border border-[#E6B800]/40'
-																	: 'bg-gray-400 hover:bg-gray-500'
-															)}
-															style={{
-																height: `${
-																	bookingInfo.slotCount *
-																		32 -
-																	1
-																}px`,
-															}}
-															onClick={() =>
-																handleSlotClick(
-																	court.id,
-																	time,
-																	court
-																)
-															}
-														>
-															<p className="text-xs font-medium text-foreground truncate">
-																{bookingInfo.lastName +
-																	' ' +
-																	bookingInfo
-																		.firstName[0] +
-																	'.'}
-															</p>
-														</div>
-													) : !bookingInfo ? (
-														<div
-															className="h-full cursor-pointer"
-															onClick={() =>
-																handleSlotClick(
-																	court.id,
-																	time,
-																	court
-																)
-															}
-														>
-															<div className="h-full m-0.5 rounded hover:bg-accent/10 transition-colors" />
-														</div>
-													) : null}
-												</div>
-											);
-										})}
-									</div>
-								))}
+											})}
+										</div>
+									);
+								})}
 							</div>
 						</div>
 					</div>
