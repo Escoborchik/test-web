@@ -5,13 +5,6 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { createBooking } from '@/store/bookingsManagment';
@@ -27,6 +20,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from '@/components/ui/dialog';
+import { TimePicker } from '@/components/ui/timepicker';
 
 const SHORT_DAY_BY_INDEX: ShortDays[] = [
 	'Sun',
@@ -55,6 +49,23 @@ const formatDateToISO = (date: Date) => {
 	const day = String(date.getDate()).padStart(2, '0');
 	return `${year}-${month}-${day}`;
 };
+
+function addOneHour(timeString: string) {
+	const [hours, minutes] = timeString.split(':').map(Number);
+
+	const dateObj = new Date();
+	dateObj.setUTCHours(hours, minutes, 0, 0);
+
+	dateObj.setUTCHours(dateObj.getUTCHours() + 1);
+
+	const newHours = dateObj.getUTCHours();
+	const newMinutes = dateObj.getUTCMinutes();
+
+	const formattedHours = newHours.toString().padStart(2, '0');
+	const formattedMinutes = newMinutes.toString().padStart(2, '0');
+
+	return `${formattedHours}:${formattedMinutes}`;
+}
 
 const timeStringToMinutes = (value: string) => {
 	const [hours, minutes] = value.split(':').map(Number);
@@ -164,8 +175,8 @@ export function AddBookingDrawer({
 	});
 	const [isRecurring, setIsRecurring] = useState(false);
 	const [selectedDays, setSelectedDays] = useState<string[]>([]);
-	const [startTime, setStartTime] = useState('10:00');
-	const [endTime, setEndTime] = useState('11:00');
+	const [startTime, setStartTime] = useState('08:00');
+	const [endTime, setEndTime] = useState(addOneHour(startTime));
 	const [startDate, setStartDate] = useState('');
 	const [endDate, setEndDate] = useState('');
 
@@ -204,6 +215,27 @@ export function AddBookingDrawer({
 			document.body.classList.remove('drawer-open');
 		};
 	}, [open, slot]);
+
+	// Автоматически обновляем endTime при изменении startTime
+	useEffect(() => {
+		const minEndTime = addOneHour(startTime);
+
+		setEndTime((currentEndTime) => {
+			const [endHours, endMinutes] = currentEndTime
+				.split(':')
+				.map(Number);
+			const [minHours, minMinutes] = minEndTime.split(':').map(Number);
+
+			const endTotalMinutes = endHours * 60 + endMinutes;
+			const minTotalMinutes = minHours * 60 + minMinutes;
+
+			// Если endTime меньше или равен минимальному (startTime + 1 час), обновляем
+			if (endTotalMinutes <= minTotalMinutes) {
+				return minEndTime;
+			}
+			return currentEndTime;
+		});
+	}, [startTime]);
 
 	useEffect(() => {
 		if (isRecurring && startDate && !selectedDays.length) {
@@ -465,7 +497,16 @@ export function AddBookingDrawer({
 									>
 										Начало
 									</Label>
-									<Select
+
+									<TimePicker
+										value={startTime}
+										onChange={(value) =>
+											setStartTime(value)
+										}
+										maxHour={22}
+									/>
+
+									{/* <Select
 										value={startTime}
 										onValueChange={setStartTime}
 									>
@@ -487,7 +528,7 @@ export function AddBookingDrawer({
 												)
 											)}
 										</SelectContent>
-									</Select>
+									</Select> */}
 								</div>
 
 								<div className="space-y-2">
@@ -497,7 +538,13 @@ export function AddBookingDrawer({
 									>
 										Конец
 									</Label>
-									<Select
+
+									<TimePicker
+										value={endTime}
+										onChange={(value) => setEndTime(value)}
+										since={addOneHour(startTime)}
+									/>
+									{/* <Select
 										value={endTime}
 										onValueChange={setEndTime}
 									>
@@ -519,7 +566,7 @@ export function AddBookingDrawer({
 												)
 											)}
 										</SelectContent>
-									</Select>
+									</Select> */}
 								</div>
 							</div>
 

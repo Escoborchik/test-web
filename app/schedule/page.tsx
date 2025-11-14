@@ -6,7 +6,7 @@ import { BookingSlotDrawer } from '@/components/booking-slot-drawer';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Card } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
+import { MultiSelect } from '@/components/ui/multi-select';
 import {
 	Popover,
 	PopoverContent,
@@ -19,11 +19,11 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '@/components/ui/select';
-import { SPORT_TYPE_LABELS } from '@/constants';
+import { COVER_TYPE_LABELS, SPORT_TYPE_LABELS } from '@/constants';
 import { cn } from '@/lib/utils';
 import { useAppSelector } from '@/store';
 import { selectCourts } from '@/store/courtsManagment';
-import { Court } from '@/types';
+import { Court, CoverType, SportType } from '@/types';
 import { Booking } from '@/types/booking';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
@@ -38,122 +38,6 @@ const timeSlots = Array.from({ length: 30 }, (_, i) => {
 		.toString()
 		.padStart(2, '0')}`;
 });
-
-const allCourts = [
-	{
-		id: 1,
-		name: 'Корт №1',
-		type: 'open',
-		sport: 'tennis',
-		location: 'location1',
-	},
-	{
-		id: 2,
-		name: 'Корт №2',
-		type: 'closed',
-		sport: 'tennis',
-		location: 'location1',
-	},
-	{
-		id: 3,
-		name: 'Корт №3',
-		type: 'open',
-		sport: 'padel',
-		location: 'location1',
-	},
-	{
-		id: 4,
-		name: 'Корт №4',
-		type: 'closed',
-		sport: 'tennis',
-		location: 'location2',
-	},
-	{
-		id: 5,
-		name: 'Корт №5',
-		type: 'open',
-		sport: 'padel',
-		location: 'location2',
-	},
-	{
-		id: 6,
-		name: 'Корт №6',
-		type: 'closed',
-		sport: 'tennis',
-		location: 'location1',
-	},
-	{
-		id: 7,
-		name: 'Корт №7',
-		type: 'open',
-		sport: 'tennis',
-		location: 'location2',
-	},
-	{
-		id: 8,
-		name: 'Корт №8',
-		type: 'closed',
-		sport: 'padel',
-		location: 'location2',
-	},
-];
-
-// Mock bookings data
-const mockBookings: any = {
-	'2025-01-15': {
-		1: [
-			{
-				time: '10:00',
-				duration: 2,
-				client: 'Иванов И.И.',
-				email: 'ivanov@mail.ru',
-				phone: '+7 (999) 123-45-67',
-				status: 'confirmed',
-				isRepeated: false,
-			},
-			{
-				time: '14:00',
-				duration: 4,
-				client: 'Петров П.П.',
-				email: 'petrov@mail.ru',
-				phone: '+7 (999) 234-56-78',
-				status: 'confirmed',
-				isRepeated: false,
-			},
-		],
-		2: [
-			{
-				time: '09:00',
-				duration: 2,
-				client: 'Сидоров С.С.',
-				email: 'sidorov@mail.ru',
-				phone: '+7 (999) 345-67-89',
-				status: 'pending',
-				isRepeated: false,
-			},
-			{
-				time: '18:00',
-				duration: 2,
-				client: 'Смирнова А.А.',
-				email: 'smirnova@mail.ru',
-				phone: '+7 (999) 456-78-90',
-				status: 'confirmed',
-				isRepeated: false,
-			},
-		],
-		3: [
-			{
-				time: '16:00',
-				duration: 2,
-				client: 'Козлов К.К.',
-				email: 'kozlov@mail.ru',
-				phone: '+7 (999) 567-89-01',
-				status: 'confirmed',
-				isRepeated: false,
-			},
-		],
-	},
-};
 
 export default function SchedulePage() {
 	const allCourts = useAppSelector(selectCourts);
@@ -187,8 +71,8 @@ export default function SchedulePage() {
 	const [selectedLocation, setSelectedLocation] = useState('all');
 	const [selectedCourtType, setSelectedCourtType] = useState('all');
 	const [selectedSport, setSelectedSport] = useState('all');
-	const [courtRangeFrom, setCourtRangeFrom] = useState('1');
-	const [courtRangeTo, setCourtRangeTo] = useState('8');
+	const [selectedCoverType, setSelectedCoverType] = useState('all');
+	const [selectedCourts, setSelectedCourts] = useState<string[]>([]);
 	const [addBookingDrawerOpen, setAddBookingDrawerOpen] = useState(false);
 	const [selectedSlot, setSelectedSlot] = useState<any>(null);
 	const [bookingSlotDrawerOpen, setBookingSlotDrawerOpen] = useState(false);
@@ -197,17 +81,20 @@ export default function SchedulePage() {
 	const filteredCourts = allCourts.filter((court) => {
 		if (selectedLocation !== 'all' && court.street !== selectedLocation)
 			return false;
-		// if (selectedCourtType !== 'all' && court.isIndoor !== selectedCourtType)
-		// 	return false;
+		if (
+			selectedCourtType !== 'all' &&
+			court.isIndoor !== (selectedCourtType === 'open' ? true : false)
+		)
+			return false;
 		if (selectedSport !== 'all' && court.sportType !== selectedSport)
 			return false;
-		// if (
-		// 	courtRangeFrom !== 'all' &&
-		// 	court.id < Number.parseInt(courtRangeFrom)
-		// )
-		// 	return false;
-		// if (courtRangeTo !== 'all' && court.id > Number.parseInt(courtRangeTo))
-		// 	return false;
+		if (
+			selectedCoverType !== 'all' &&
+			court.coverType !== selectedCoverType
+		)
+			return false;
+		if (selectedCourts.length > 0 && !selectedCourts.includes(court.id))
+			return false;
 		return true;
 	});
 
@@ -299,7 +186,7 @@ export default function SchedulePage() {
 				</div>
 
 				<Card className="p-3">
-					<div className="flex gap-3">
+					<div className="flex gap-3 items-center">
 						<div className="flex items-center gap-2">
 							<Button
 								variant="outline"
@@ -352,109 +239,110 @@ export default function SchedulePage() {
 							</Button>
 						</div>
 
-						<div className="flex items-center gap-2">
-							<Select
-								value={selectedLocation}
-								onValueChange={setSelectedLocation}
-							>
-								<SelectTrigger className="text-sm">
-									<SelectValue placeholder="Локация" />
-								</SelectTrigger>
-								<SelectContent>
-									<SelectItem value="all">Адрес</SelectItem>
-									<SelectItem value="location1">
-										ул. Спортивная, 12
-									</SelectItem>
-									<SelectItem value="location2">
-										пр. Ленина, 45
-									</SelectItem>
-								</SelectContent>
-							</Select>
-
-							<Select
-								value={selectedCourtType}
-								onValueChange={setSelectedCourtType}
-							>
-								<SelectTrigger className="text-sm">
-									<SelectValue placeholder="Тип корта" />
-								</SelectTrigger>
-								<SelectContent>
-									<SelectItem value="all">
-										Все типы
-									</SelectItem>
-									<SelectItem value="open">
-										Открытые
-									</SelectItem>
-									<SelectItem value="closed">
-										Закрытые
-									</SelectItem>
-								</SelectContent>
-							</Select>
-
-							<Select
-								value={selectedSport}
-								onValueChange={setSelectedSport}
-							>
-								<SelectTrigger className="text-sm">
-									<SelectValue placeholder="Вид спорта" />
-								</SelectTrigger>
-								<SelectContent>
-									<SelectItem value="all">
-										Все виды
-									</SelectItem>
-									<SelectItem value="tennis">
-										Теннис
-									</SelectItem>
-									<SelectItem value="padel">Падел</SelectItem>
-								</SelectContent>
-							</Select>
+						<div className=" min-w-[250px]">
+							<MultiSelect
+								options={allCourts.map((court) => ({
+									label: court.name,
+									value: court.id,
+								}))}
+								selected={selectedCourts}
+								onChange={setSelectedCourts}
+								placeholder="Все корты"
+								className="h-9"
+							/>
 						</div>
 
-						<div className="flex flex-1 justify-end gap-2">
-							<div className="space-y-1">
-								<Label className="text-xs text-muted-foreground">
-									От корта
-								</Label>
+						<div className="flex flex-1 items-center justify-end gap-2">
+							<div className="grid grid-cols-2 gap-2">
 								<Select
-									value={courtRangeFrom}
-									onValueChange={setCourtRangeFrom}
+									value={selectedLocation}
+									onValueChange={setSelectedLocation}
 								>
-									<SelectTrigger className="text-sm h-9">
+									<SelectTrigger className="text-sm">
 										<SelectValue />
 									</SelectTrigger>
 									<SelectContent>
-										{allCourts.map((court) => (
+										<SelectItem value="all">
+											Все адреса
+										</SelectItem>
+										{allCourts.map((court, index) => (
 											<SelectItem
-												key={court.id}
-												value={court.id.toString()}
+												key={`location${index}`}
+												value={court.street}
 											>
-												Корт №{court.id}
+												{court.street}
 											</SelectItem>
 										))}
 									</SelectContent>
 								</Select>
-							</div>
 
-							<div className="space-y-1">
-								<Label className="text-xs text-muted-foreground">
-									До корта
-								</Label>
 								<Select
-									value={courtRangeTo}
-									onValueChange={setCourtRangeTo}
+									value={selectedCourtType}
+									onValueChange={setSelectedCourtType}
 								>
-									<SelectTrigger className="text-sm h-9">
-										<SelectValue />
+									<SelectTrigger className="text-sm">
+										<SelectValue placeholder="Тип корта" />
 									</SelectTrigger>
 									<SelectContent>
-										{allCourts.map((court) => (
-											<SelectItem
-												key={court.id}
-												value={court.id.toString()}
-											>
-												Корт №{court.id}
-											</SelectItem>
-										))}
+										<SelectItem value="all">
+											Все типы
+										</SelectItem>
+										<SelectItem value="open">
+											Открытые
+										</SelectItem>
+										<SelectItem value="closed">
+											Закрытые
+										</SelectItem>
+									</SelectContent>
+								</Select>
+
+								<Select
+									value={selectedSport}
+									onValueChange={setSelectedSport}
+								>
+									<SelectTrigger className="text-sm">
+										<SelectValue placeholder="Вид спорта" />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value="all">
+											Все виды спорта
+										</SelectItem>
+										{Object.keys(SPORT_TYPE_LABELS).map(
+											(sportType) => (
+												<SelectItem value={sportType}>
+													{
+														SPORT_TYPE_LABELS[
+															sportType as SportType
+														]
+													}
+												</SelectItem>
+											)
+										)}
+									</SelectContent>
+								</Select>
+
+								<Select
+									value={selectedCoverType}
+									onValueChange={setSelectedCoverType}
+								>
+									<SelectTrigger className="text-sm">
+										<SelectValue placeholder="Тип повехности" />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value="all">
+											Все поверхности
+										</SelectItem>
+										{Object.keys(COVER_TYPE_LABELS).map(
+											(coverType) => (
+												<SelectItem value={coverType}>
+													{
+														COVER_TYPE_LABELS[
+															coverType as CoverType
+														]
+													}
+												</SelectItem>
+											)
+										)}
 									</SelectContent>
 								</Select>
 							</div>
@@ -482,7 +370,9 @@ export default function SchedulePage() {
 												? 'Открытый'
 												: 'Закрытый'}{' '}
 											•{' '}
-											{SPORT_TYPE_LABELS[court.sportType]}
+											{SPORT_TYPE_LABELS[court.sportType]}{' '}
+											•{' '}
+											{COVER_TYPE_LABELS[court.coverType]}
 										</p>
 									</div>
 								))}

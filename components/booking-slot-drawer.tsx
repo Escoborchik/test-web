@@ -29,7 +29,7 @@ import {
 	User,
 	X,
 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 type BookingWithContext = Booking & {
 	courtName: string;
@@ -54,9 +54,19 @@ export function BookingSlotDrawer({
 	const dispatch = useAppDispatch();
 	const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
 	const handleConfirm = () => {
-		dispatch(updateStatusBooking({ id: booking.id, status: 'confirmed' }));
 		setConfirmDialogOpen(true);
 	};
+
+	useEffect(() => {
+		if (open) {
+			document.body.classList.add('drawer-open');
+		} else {
+			document.body.classList.remove('drawer-open');
+		}
+		return () => {
+			document.body.classList.remove('drawer-open');
+		};
+	}, [open]);
 
 	const refundHour = 24;
 	const totalSessions = useMemo(() => {
@@ -594,32 +604,36 @@ export function BookingSlotDrawer({
 						</div>
 					</div>
 
-					<div className="p-6 border-t border-border space-y-3">
-						{booking.status === 'pending' && (
+					{booking.status !== 'pending-payment' && (
+						<div className="p-6 border-t border-border space-y-3">
+							{booking.status === 'pending' && (
+								<Button
+									onClick={handleConfirm}
+									className="w-full bg-[#1E7A4C] hover:bg-[#1E7A4C]/90 text-white"
+								>
+									Подтвердить бронирование
+								</Button>
+							)}
+
 							<Button
-								onClick={handleConfirm}
-								className="w-full bg-[#1E7A4C] hover:bg-[#1E7A4C]/90 text-white"
+								variant="destructive"
+								className="w-full"
+								onClick={() => setCancelDialogOpen(true)}
 							>
-								Подтвердить бронирование
+								Отменить текущее
 							</Button>
-						)}
-						<Button
-							variant="destructive"
-							className="w-full"
-							onClick={() => setCancelDialogOpen(true)}
-						>
-							Отменить текущее
-						</Button>
-						{booking.isRecurring && (
-							<Button
-								variant="outline"
-								className="w-full text-destructive hover:text-destructive bg-transparent"
-								onClick={() => setCancelAllDialogOpen(true)}
-							>
-								Отменить все повторения
-							</Button>
-						)}
-					</div>
+
+							{booking.isRecurring && (
+								<Button
+									variant="outline"
+									className="w-full text-destructive hover:text-destructive bg-transparent"
+									onClick={() => setCancelAllDialogOpen(true)}
+								>
+									Отменить все повторения
+								</Button>
+							)}
+						</div>
+					)}
 				</div>
 			</div>
 
