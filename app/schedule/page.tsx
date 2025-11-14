@@ -28,7 +28,7 @@ import { Booking } from '@/types/booking';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 const timeSlots = Array.from({ length: 30 }, (_, i) => {
 	const totalMinutes = 8 * 60 + i * 30;
@@ -211,37 +211,40 @@ export default function SchedulePage() {
 		return true;
 	});
 
-	const getBookingForSlot = (courtId: string, time: string) => {
-		const dateStr = format(selectedDate, 'yyyy-MM-dd');
-		const bookings = bookingsForShedule[dateStr]?.[courtId] || [];
+	const getBookingForSlot = useCallback(
+		(courtId: string, time: string) => {
+			const dateStr = format(selectedDate, 'yyyy-MM-dd');
+			const bookings = bookingsForShedule[dateStr]?.[courtId] || [];
 
-		for (const booking of bookings) {
-			if (booking.status === 'rejected') continue;
-			const bookingStartTime = booking.time.split('-')[0];
+			for (const booking of bookings) {
+				if (booking.status === 'rejected') continue;
+				const bookingStartTime = booking.time.split('-')[0];
 
-			const bookingStartMinutes =
-				Number.parseInt(bookingStartTime.split(':')[0]) * 60 +
-				Number.parseInt(bookingStartTime.split(':')[1]);
-			const slotMinutes =
-				Number.parseInt(time.split(':')[0]) * 60 +
-				Number.parseInt(time.split(':')[1]);
-			const bookingEndMinutes =
-				bookingStartMinutes + booking.duration * 60;
+				const bookingStartMinutes =
+					Number.parseInt(bookingStartTime.split(':')[0]) * 60 +
+					Number.parseInt(bookingStartTime.split(':')[1]);
+				const slotMinutes =
+					Number.parseInt(time.split(':')[0]) * 60 +
+					Number.parseInt(time.split(':')[1]);
+				const bookingEndMinutes =
+					bookingStartMinutes + booking.duration * 60;
 
-			if (
-				slotMinutes >= bookingStartMinutes &&
-				slotMinutes < bookingEndMinutes
-			) {
-				return {
-					...booking,
-					isStart: slotMinutes === bookingStartMinutes,
-					slotCount: (booking.duration * 60) / 30,
-				};
+				if (
+					slotMinutes >= bookingStartMinutes &&
+					slotMinutes < bookingEndMinutes
+				) {
+					return {
+						...booking,
+						isStart: slotMinutes === bookingStartMinutes,
+						slotCount: (booking.duration * 60) / 30,
+					};
+				}
 			}
-		}
 
-		return null;
-	};
+			return null;
+		},
+		[bookingsForShedule]
+	);
 
 	const changeDate = (days: number) => {
 		const date = new Date(selectedDate);
