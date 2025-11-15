@@ -24,7 +24,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { Booking } from '@/types/booking';
-import { Check, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { Check, ChevronLeft, ChevronRight, Repeat, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 import { updateStatusBooking } from '@/store/bookingsManagment';
@@ -255,7 +255,7 @@ export default function BookingsPage() {
 									value={selectedCourtId}
 									onValueChange={setSelectedCourtId}
 								>
-									<SelectTrigger className="h-9">
+									<SelectTrigger className="h-9 w-[180px]">
 										<SelectValue />
 									</SelectTrigger>
 									<SelectContent>
@@ -286,7 +286,7 @@ export default function BookingsPage() {
 											: setShowOnlyRecurring(true)
 									}
 								>
-									<SelectTrigger className="h-9">
+									<SelectTrigger className="h-9 w-[180px]">
 										<SelectValue />
 									</SelectTrigger>
 									<SelectContent>
@@ -520,11 +520,16 @@ export default function BookingsPage() {
 														})
 													}
 												>
-													<td className="p-4">
+													<td className="p-4 relative">
 														<p className="text-sm font-medium text-foreground">
 															{booking.firstName}{' '}
 															{booking.lastName}
 														</p>
+														{booking.isRecurring && (
+															<div className="absolute top-2 right-2 w-4.5 h-4.5 rounded-full bg-accent flex items-center justify-center">
+																<Repeat className="w-2.5 h-2.5 text-white" />
+															</div>
+														)}
 													</td>
 													<td className="p-4 text-sm text-foreground">
 														{booking.phone}

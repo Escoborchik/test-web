@@ -24,7 +24,7 @@ import {
 	User,
 	X,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 interface BookingDetailsDrawerProps {
 	booking: Booking & { courtName: string };
@@ -40,6 +40,14 @@ export function BookingDetailsDrawer({
 	const dispatch = useAppDispatch();
 	const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
 	const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
+	const totalSessions = useMemo(() => {
+		if (booking?.recurringDetails)
+			return (
+				booking.recurringDetails.weeks *
+				booking.recurringDetails.days.length
+			);
+		return null;
+	}, [booking?.recurringDetails]);
 
 	useEffect(() => {
 		if (open) {
@@ -276,6 +284,31 @@ export function BookingDetailsDrawer({
 												.join(', ')}
 										</span>
 									</div>
+									{totalSessions !== null && (
+										<div className="flex items-center justify-between bg-muted/50 rounded">
+											<span className="text-muted-foreground">
+												Всего занятий:
+											</span>
+											<p className="font-medium text-foreground ">
+												{totalSessions}
+											</p>
+										</div>
+									)}
+
+									{booking.price && totalSessions && (
+										<div className="p-2.5 bg-accent/10 rounded border border-accent/30 text-center">
+											<p className="text-base text-muted-foreground mb-1">
+												Цена за все занятия
+											</p>
+											<p className="text-xl font-semibold text-accent">
+												{(
+													booking.price *
+													totalSessions
+												).toLocaleString()}{' '}
+												₽
+											</p>
+										</div>
+									)}
 								</div>
 							</div>
 						)}
