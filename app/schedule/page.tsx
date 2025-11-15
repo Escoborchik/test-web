@@ -286,13 +286,13 @@ export default function SchedulePage() {
 							/>
 						</div>
 
-						<div className="flex flex-1 items-center justify-end gap-2">
-							<div className="grid grid-cols-2 gap-2">
+						<div className="flex flex-1 items-center justify-end">
+							<div className="grid grid-cols-2 gap-y-2 gap-x-7 w-fit">
 								<Select
 									value={selectedLocation}
 									onValueChange={setSelectedLocation}
 								>
-									<SelectTrigger className="text-sm">
+									<SelectTrigger className="text-sm w-[180px]">
 										<SelectValue />
 									</SelectTrigger>
 									<SelectContent>
@@ -314,7 +314,7 @@ export default function SchedulePage() {
 									value={selectedCourtType}
 									onValueChange={setSelectedCourtType}
 								>
-									<SelectTrigger className="text-sm">
+									<SelectTrigger className="text-sm w-[180px]">
 										<SelectValue placeholder="Тип корта" />
 									</SelectTrigger>
 									<SelectContent>
@@ -334,7 +334,7 @@ export default function SchedulePage() {
 									value={selectedSport}
 									onValueChange={setSelectedSport}
 								>
-									<SelectTrigger className="text-sm">
+									<SelectTrigger className="text-sm w-[180px]">
 										<SelectValue placeholder="Вид спорта" />
 									</SelectTrigger>
 									<SelectContent>
@@ -359,7 +359,7 @@ export default function SchedulePage() {
 									value={selectedCoverType}
 									onValueChange={setSelectedCoverType}
 								>
-									<SelectTrigger className="text-sm">
+									<SelectTrigger className="text-sm w-[180px]">
 										<SelectValue placeholder="Тип повехности" />
 									</SelectTrigger>
 									<SelectContent>
@@ -388,7 +388,7 @@ export default function SchedulePage() {
 					<div className="overflow-x-auto overflow-y-hidden">
 						<div className="min-w-[800px]">
 							<div className="flex border-b border-border bg-secondary">
-								<div className="w-32 p-2 font-semibold text-sm text-primary sticky left-0 bg-secondary z-10">
+								<div className="w-22 p-2 font-semibold text-sm text-primary sticky left-0 bg-secondary z-10">
 									Время
 								</div>
 								{filteredCourts.map((court) => (
@@ -421,7 +421,7 @@ export default function SchedulePage() {
 											key={time}
 											className="flex border-b border-border h-8"
 										>
-											<div className="w-32 px-2 py-1 text-xs font-medium text-muted-foreground sticky left-0 bg-card z-10 border-r border-border flex items-center">
+											<div className="w-22 px-2 py-1 text-xs font-medium text-muted-foreground sticky left-0 bg-card z-10 border-r border-border flex items-center font-mono tabular-nums">
 												{timeSlot.display}
 											</div>
 

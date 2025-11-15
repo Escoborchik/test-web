@@ -641,52 +641,71 @@ export function AddBookingDrawer({
 							<h3 className="text-sm font-semibold text-primary">
 								Информация о бронировании
 							</h3>
-							<div className="space-y-3 p-3 bg-accent/5 rounded-lg border border-accent/20">
-								<Label className="text-sm font-medium flex items-center gap-2">
-									Время бронирования
-								</Label>
-								<div className="flex item-center gap-3">
-									<div className="space-y-2">
-										{/* <Label
+							<div className="space-y-5 p-3 bg-accent/5 rounded-lg border border-accent/20">
+								<div className="flex flex-col gap-2 text-sm">
+									<Label className="text-sm font-medium flex items-center gap-2">
+										Дата бронирования
+									</Label>
+
+									<div className="flex items-center gap-2">
+										{new Date(slot.date).toLocaleDateString(
+											'ru-RU',
+											{
+												day: 'numeric',
+												month: 'long',
+												year: 'numeric',
+											}
+										)}
+									</div>
+								</div>
+
+								<div className="flex flex-col gap-2">
+									<Label className="text-sm font-medium flex items-center gap-2">
+										Время бронирования
+									</Label>
+									<div className="flex item-center gap-3">
+										<div className="space-y-2">
+											{/* <Label
 											htmlFor="startTime"
 											className="text-xs text-muted-foreground mb-1.5 block"
 										>
 											Начало
 										</Label> */}
 
-										<TimePicker
-											value={startTime}
-											onChange={(value) =>
-												setStartTime(value)
-											}
-											maxHour={22}
-										/>
-									</div>
+											<TimePicker
+												value={startTime}
+												onChange={(value) =>
+													setStartTime(value)
+												}
+												maxHour={22}
+											/>
+										</div>
 
-									<div className="flex items-center align-center text-muted-foreground">
-										—
-									</div>
+										<div className="flex items-center align-center text-muted-foreground">
+											—
+										</div>
 
-									<div className="space-y-2">
-										{/* <Label
+										<div className="space-y-2">
+											{/* <Label
 											htmlFor="endTime"
 											className="text-xs text-muted-foreground mb-1.5 block"
 										>
 											Конец
 										</Label> */}
 
-										<TimePicker
-											value={endTime}
-											onChange={(value) =>
-												setEndTime(value)
-											}
-											since={addOneHour(startTime)}
-										/>
+											<TimePicker
+												value={endTime}
+												onChange={(value) =>
+													setEndTime(value)
+												}
+												since={addOneHour(startTime)}
+											/>
+										</div>
 									</div>
 								</div>
 
 								{/* Duration display and validation */}
-								<div className="flex flex-col  gap-2 text-sm">
+								<div className="flex flex-col gap-2 text-sm">
 									<Label className="text-sm font-medium flex items-center gap-2">
 										Длительность
 									</Label>
@@ -710,7 +729,7 @@ export function AddBookingDrawer({
 									</div>
 								</div>
 
-								<div className="space-y-2">
+								<div className="flex flex-col gap-2 mb-2.5">
 									<Label
 										htmlFor="price"
 										className="text-sm flex items-center gap-2"
