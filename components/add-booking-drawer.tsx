@@ -1123,6 +1123,12 @@ export function AddBookingDrawer({
 								}
 
 								handleCreateBooking(currentBooking);
+								setClientInfo({
+									firstName: '',
+									lastName: '',
+									phone: '',
+									email: '',
+								});
 								setConfirmDialogOpen(false);
 								onClose();
 							}}

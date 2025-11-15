@@ -253,6 +253,11 @@ export function BookingSlotDrawer({
 								Ожидает подтверждения
 							</Badge>
 						)}
+						{booking.status === 'pending-payment' && (
+							<Badge className="bg-gray-500 text-white hover:bg-gray-500/90">
+								Ожидает оплаты
+							</Badge>
+						)}
 
 						<div className="space-y-3">
 							<h3 className="text-sm font-semibold text-primary">
