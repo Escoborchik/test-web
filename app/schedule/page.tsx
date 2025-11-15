@@ -176,11 +176,35 @@ export default function SchedulePage() {
 			});
 			setBookingSlotDrawerOpen(true);
 		} else {
+			// Определяем, выходной день или будний
+			const dayOfWeek = selectedDate.getDay();
+			const isWeekend = dayOfWeek === 0 || dayOfWeek === 6; // 0 = воскресенье, 6 = суббота
+			const dayGroup = isWeekend ? 'weekends' : 'weekdays';
+			const priceSlots = court.prices[dayGroup] || [];
+
+			// Находим подходящий ценовой слот по времени
+			const timeToMinutes = (timeStr: string) => {
+				const [hours, minutes] = timeStr.split(':').map(Number);
+				return hours * 60 + minutes;
+			};
+
+			const timeMinutes = timeToMinutes(time);
+			const matchedSlot = priceSlots.find((slot) => {
+				const fromMinutes = timeToMinutes(slot.from);
+				const toMinutes = timeToMinutes(slot.to);
+				return timeMinutes >= fromMinutes && timeMinutes < toMinutes;
+			});
+
 			setNewBookingSlot({
 				courtId: court.id,
 				courtName: court.name,
+				coverType: court.coverType,
+				sportType: court.sportType,
+				isIndoor: court.isIndoor,
+				street: court.street,
 				time,
 				date: format(selectedDate, 'yyyy-MM-dd'),
+				pricePerSession: matchedSlot?.price ?? 0,
 			});
 			setAddBookingDrawerOpen(true);
 		}
@@ -361,7 +385,7 @@ export default function SchedulePage() {
 				</Card>
 
 				<Card className="overflow-hidden">
-					<div className="overflow-x-auto">
+					<div className="overflow-x-auto overflow-y-hidden">
 						<div className="min-w-[800px]">
 							<div className="flex border-b border-border bg-secondary">
 								<div className="w-32 p-2 font-semibold text-sm text-primary sticky left-0 bg-secondary z-10">
@@ -420,10 +444,10 @@ export default function SchedulePage() {
 																	'absolute inset-0 m-0.5 rounded px-2 flex items-center justify-center transition-colors cursor-pointer z-10',
 																	bookingInfo.status ===
 																		'confirmed'
-																		? 'bg-[#1E7A4C]/20 hover:bg-[#1E7A4C]/30 border border-[#1E7A4C]/40'
+																		? 'bg-[#1E7A4C]/40 hover:bg-[#1E7A4C]/50 border border-[#1E7A4C]/60'
 																		: bookingInfo.status ===
 																		  'pending'
-																		? 'bg-[#E6B800]/20 hover:bg-[#E6B800]/30 border border-[#E6B800]/40'
+																		? 'bg-[#E6B800]/40 hover:bg-[#E6B800]/50 border border-[#E6B800]/60'
 																		: 'bg-gray-400 hover:bg-gray-500'
 																)}
 																style={{
