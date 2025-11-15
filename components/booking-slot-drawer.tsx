@@ -24,7 +24,6 @@ import {
 	Mail,
 	MapPin,
 	Phone,
-	Repeat,
 	RussianRuble,
 	User,
 	X,
@@ -371,17 +370,9 @@ export function BookingSlotDrawer({
 								{booking.isRecurring && (
 									<>
 										<div className="pt-2 border-t border-accent/20">
-											<div className="flex items-start gap-3 mb-3">
-												<div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0">
-													<Repeat className="h-5 w-5 text-accent" />
-												</div>
-												<div className="flex-1 min-w-0">
-													<p className="text-sm font-semibold text-accent mb-1">
-														Повторяющееся
-														бронирование
-													</p>
-												</div>
-											</div>
+											<Badge className="bg-accent/20 text-accent border border-accent/40 mb-3 px-3 py-1.5">
+												Повторяющееся бронирование
+											</Badge>
 
 											<div className="space-y-2.5 pl-1">
 												{booking.price && (
