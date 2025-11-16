@@ -3,6 +3,8 @@
 import { AdminLayout } from '@/components/admin-layout';
 import { CourtFormCreate } from '@/components/court-form-create';
 import { CourtFormEdit } from '@/components/court-form-edit';
+import { TariffFormCreate } from '@/components/tariff-form-create';
+import { TariffFormEdit } from '@/components/tariff-form-edit';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import {
@@ -17,6 +19,11 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { TimePicker } from '@/components/ui/timepicker';
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { COVER_TYPE_LABELS, SPORT_TYPE_LABELS } from '@/constants';
 import { cn } from '@/lib/utils';
 import { useAppDispatch, useAppSelector } from '@/store';
@@ -26,13 +33,19 @@ import {
 	updateCourt,
 	updateVisible,
 } from '@/store/courtsManagment';
-import { Court, PriceSlot } from '@/types';
+import {
+	addTariff,
+	deleteTariff,
+	updateTariff,
+} from '@/store/tariffsManagment';
+import { Court, PriceSlot, Tariff } from '@/types';
 import {
 	Building2,
 	Edit2,
 	Eye,
 	EyeOff,
 	Plus,
+	Tag,
 	Trash2,
 	Upload,
 } from 'lucide-react';
@@ -89,12 +102,21 @@ export default function OrganizationPage() {
 	const courtsFromStore = useAppSelector(
 		(state) => state.courtsManagment.courts
 	);
+	const tariffsFromStore = useAppSelector(
+		(state) => state.tariffsManagment.tariffs
+	);
 
 	const [activeTab, setActiveTab] = useState('info');
 	const [editingCourt, setEditingCourt] = useState<any>(null);
 	const [isAddingCourt, setIsAddingCourt] = useState(false);
-	const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+	const [editingTariff, setEditingTariff] = useState<any>(null);
+	const [isAddingTariff, setIsAddingTariff] = useState(false);
+	const [deleteConfirmOpen, setDeleteConfirmOpen] = useState<{
+		typeState: 'tariff' | 'court';
+		realState: boolean;
+	}>({ typeState: 'court', realState: false });
 	const [courtToDelete, setCourtToDelete] = useState<any>(null);
+	const [tariffToDelete, setTariffToDelete] = useState<any>(null);
 
 	const [selectedAmenitiesId, setSelectedAmenitiesId] = useState([
 		'parking',
@@ -119,9 +141,22 @@ export default function OrganizationPage() {
 		}
 	};
 
+	const handleSaveTariff = (tariffData: Tariff) => {
+		if (editingTariff) {
+			dispatch(updateTariff(tariffData));
+
+			setEditingTariff(false);
+		}
+	};
+
 	const handleAddCourt = (courtData: Court) => {
 		dispatch(addCourt(courtData));
 		setIsAddingCourt(false);
+	};
+
+	const handleAddTariff = (tariffData: Tariff) => {
+		dispatch(addTariff(tariffData));
+		setIsAddingTariff(false);
 	};
 
 	const toggleCourtVisibility = (courtId: string) => {
@@ -130,14 +165,27 @@ export default function OrganizationPage() {
 
 	const handleDeleteCourt = (court: any) => {
 		setCourtToDelete(court);
-		setDeleteConfirmOpen(true);
+		setDeleteConfirmOpen({ typeState: 'court', realState: true });
 	};
 
-	const confirmDelete = () => {
-		if (courtToDelete) {
-			dispatch(deleteCourt(courtToDelete.id));
-			setDeleteConfirmOpen(false);
-			setCourtToDelete(null);
+	const handleDeleteTariff = (tariff: any) => {
+		setTariffToDelete(tariff);
+		setDeleteConfirmOpen({ typeState: 'tariff', realState: true });
+	};
+
+	const confirmDelete = (typeState: 'tariff' | 'court') => {
+		if (typeState === 'court') {
+			if (courtToDelete) {
+				dispatch(deleteCourt(courtToDelete.id));
+				setDeleteConfirmOpen({ typeState: 'court', realState: false });
+				setCourtToDelete(null);
+			}
+		} else {
+			if (tariffToDelete) {
+				dispatch(deleteTariff(tariffToDelete.id));
+				setDeleteConfirmOpen({ typeState: 'tariff', realState: false });
+				setTariffToDelete(null);
+			}
 		}
 	};
 
@@ -156,6 +204,7 @@ export default function OrganizationPage() {
 					<TabsList className="bg-card border border-border">
 						<TabsTrigger value="info">Общая информация</TabsTrigger>
 						<TabsTrigger value="courts">Корты</TabsTrigger>
+						<TabsTrigger value="tariffs">Тарифы</TabsTrigger>
 					</TabsList>
 
 					{/* General Information Tab */}
@@ -576,29 +625,228 @@ export default function OrganizationPage() {
 							))}
 						</div>
 					</TabsContent>
+
+					<TabsContent value="tariffs" className="mt-4 space-y-4">
+						<div className="flex justify-end">
+							<Button
+								className="gap-2 bg-[#1E7A4C] hover:bg-[#1E7A4C]/90 text-white"
+								onClick={() => setIsAddingTariff(true)}
+								disabled={isAddingTariff || editingTariff}
+							>
+								<Plus className="h-4 w-4" />
+								Добавить тарифф
+							</Button>
+						</div>
+
+						{/* Add Tariff Form */}
+						{isAddingTariff && (
+							<TariffFormCreate
+								onAdd={handleAddTariff}
+								onCancel={() => setIsAddingTariff(false)}
+							/>
+						)}
+
+						<div className="space-y-3">
+							{tariffsFromStore.map((tariff) => (
+								<div key={tariff.id}>
+									{editingTariff?.id === tariff.id ? (
+										<TariffFormEdit
+											tariff={tariff}
+											onSave={handleSaveTariff}
+											onCancel={() =>
+												setEditingTariff(null)
+											}
+										/>
+									) : (
+										<Card className="p-4">
+											<div className="flex items-start justify-between mb-2">
+												<div className="flex items-center gap-3">
+													<div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center">
+														<Tag className="h-5 w-5 text-accent" />
+													</div>
+													<div>
+														<h4 className="text-base font-semibold text-primary">
+															{tariff.title}
+														</h4>
+														<Tooltip>
+															<TooltipTrigger
+																asChild
+															>
+																<div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-accent/20 hover:bg-accent/30 transition-colors cursor-help">
+																	<span className="text-xs font-medium text-accent">
+																		{tariff
+																			.courtIds
+																			.length ===
+																		courtsFromStore.length
+																			? 'Применяется ко всем кортам'
+																			: `Применяется к ${tariff.courtIds.length} из ${courtsFromStore.length} кортов`}
+																	</span>
+																</div>
+															</TooltipTrigger>
+															<TooltipContent className="max-w-[250px]">
+																<div className="space-y-1.5">
+																	<p className="text-xs font-semibold mb-1 text-accent-foreground">
+																		Корты с
+																		этим
+																		тарифом:
+																	</p>
+																	{tariff.courtIds.map(
+																		(
+																			courtId: string
+																		) => {
+																			const court =
+																				courtsFromStore.find(
+																					(
+																						c
+																					) =>
+																						c.id ===
+																						courtId
+																				);
+																			return court ? (
+																				<div
+																					key={
+																						courtId
+																					}
+																					className="flex items-center gap-1.5 text-xs"
+																				>
+																					<div className="h-1 w-1 rounded-full bg-accent" />
+																					<span>
+																						{
+																							court.name
+																						}
+																					</span>
+																				</div>
+																			) : null;
+																		}
+																	)}
+																</div>
+															</TooltipContent>
+														</Tooltip>
+													</div>
+												</div>
+												<div className="flex gap-2">
+													<Button
+														variant="outline"
+														size="icon"
+														className="h-8 w-8 bg-transparent"
+														onClick={() =>
+															setEditingTariff(
+																tariff
+															)
+														}
+													>
+														<Edit2 className="h-4 w-4" />
+													</Button>
+
+													<Button
+														variant="outline"
+														size="icon"
+														className="text-destructive hover:text-destructive bg-transparent h-8 w-8"
+														onClick={() =>
+															handleDeleteTariff(
+																tariff
+															)
+														}
+													>
+														<Trash2 className="h-4 w-4" />
+													</Button>
+												</div>
+											</div>
+
+											<div className="space-y-2 text-sm">
+												{/* Pricing - Side by side layout */}
+												<div className="grid grid-cols-2 gap-4 pt-2">
+													<div>
+														<p className="text-sm font-medium text-foreground mb-1">
+															Будни (Пн-Пт)
+														</p>
+														{tariff.prices.weekdays.map(
+															(
+																slot: PriceSlot,
+																idx: number
+															) => (
+																<p
+																	key={idx}
+																	className="text-xs text-muted-foreground"
+																>
+																	{slot.from}{' '}
+																	- {slot.to}:{' '}
+																	{slot.price}{' '}
+																	₽
+																</p>
+															)
+														)}
+													</div>
+													<div>
+														<p className="text-sm font-medium text-foreground mb-1">
+															Выходные (Сб-Вс)
+														</p>
+														{tariff.prices.weekends.map(
+															(
+																slot: PriceSlot,
+																idx: number
+															) => (
+																<p
+																	key={idx}
+																	className="text-xs text-muted-foreground"
+																>
+																	{slot.from}{' '}
+																	- {slot.to}:{' '}
+																	{slot.price}{' '}
+																	₽
+																</p>
+															)
+														)}
+													</div>
+												</div>
+											</div>
+										</Card>
+									)}
+								</div>
+							))}
+						</div>
+					</TabsContent>
 				</Tabs>
 			</div>
 
 			<Dialog
-				open={deleteConfirmOpen}
-				onOpenChange={setDeleteConfirmOpen}
+				open={deleteConfirmOpen.realState}
+				onOpenChange={(open) =>
+					setDeleteConfirmOpen((prevState) => ({
+						...prevState,
+						realState: open,
+					}))
+				}
 			>
 				<DialogContent>
 					<DialogHeader>
 						<DialogTitle>Удалить корт?</DialogTitle>
 						<DialogDescription>
-							Вы уверены, что хотите удалить {courtToDelete?.name}
+							Вы уверены, что хотите удалить{' '}
+							{deleteConfirmOpen.typeState === 'court'
+								? `корт "${courtToDelete?.name}"`
+								: `тариф "${tariffToDelete?.title}"`}
 							? Это действие нельзя отменить.
 						</DialogDescription>
 					</DialogHeader>
 					<div className="flex gap-3 justify-end mt-4">
 						<Button
 							variant="outline"
-							onClick={() => setDeleteConfirmOpen(false)}
+							onClick={() =>
+								setDeleteConfirmOpen((prevState) => ({
+									...prevState,
+									realState: false,
+								}))
+							}
 						>
 							Отмена
 						</Button>
-						<Button variant="destructive" onClick={confirmDelete}>
+						<Button
+							variant="destructive"
+							onClick={() =>
+								confirmDelete(deleteConfirmOpen.typeState)
+							}
+						>
 							Удалить
 						</Button>
 					</div>
