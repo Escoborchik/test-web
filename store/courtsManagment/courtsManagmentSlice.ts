@@ -143,9 +143,9 @@ const courtsManagmentSlice = createSlice({
 			state.courts.unshift(action.payload);
 		},
 
-		deleteCourt: (state, action: PayloadAction<Court>) => {
+		deleteCourt: (state, action: PayloadAction<string>) => {
 			state.courts = state.courts.filter(
-				(court) => court.id !== action.payload.id
+				(court) => court.id !== action.payload
 			);
 		},
 

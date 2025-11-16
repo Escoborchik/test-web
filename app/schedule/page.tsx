@@ -444,10 +444,10 @@ export default function SchedulePage() {
 																	'absolute inset-0 rounded px-2 flex items-center justify-center transition-colors cursor-pointer z-10',
 																	bookingInfo.status ===
 																		'confirmed'
-																		? 'bg-[#1E7A4C]/90 hover:bg-[#1E7A4C]/85 border border-[#1E7A4C]/60'
+																		? 'bg-[#1E7A4C]/40 hover:bg-[#1E7A4C]/50 border-2 border-[#1E7A4C]/60'
 																		: bookingInfo.status ===
 																		  'pending'
-																		? 'bg-[#E6B800]/90 hover:bg-[#E6B800]/75 border border-[#E6B800]/60'
+																		? 'bg-[#E6B800]/40 hover:bg-[#E6B800]/50 border-2 border-[#E6B800]/60'
 																		: 'bg-gray-500 hover:bg-gray-500/85'
 																)}
 																style={{

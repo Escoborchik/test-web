@@ -91,7 +91,6 @@ export default function OrganizationPage() {
 	);
 
 	const [activeTab, setActiveTab] = useState('info');
-	const [courts, setCourts] = useState(courtsFromStore);
 	const [editingCourt, setEditingCourt] = useState<any>(null);
 	const [isAddingCourt, setIsAddingCourt] = useState(false);
 	const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
@@ -115,34 +114,18 @@ export default function OrganizationPage() {
 	const handleSaveCourt = (courtData: Court) => {
 		if (editingCourt) {
 			dispatch(updateCourt(courtData));
-			setCourts(
-				courts.map((c) =>
-					c.id === editingCourt.id
-						? {
-								...courtData,
-								id: editingCourt.id,
-								visible: editingCourt.visible,
-						  }
-						: c
-				)
-			);
+
 			setEditingCourt(null);
 		}
 	};
 
 	const handleAddCourt = (courtData: Court) => {
 		dispatch(addCourt(courtData));
-		setCourts([{ ...courtData }, ...courts]);
 		setIsAddingCourt(false);
 	};
 
 	const toggleCourtVisibility = (courtId: string) => {
 		dispatch(updateVisible(courtId));
-		setCourts(
-			courts.map((c) =>
-				c.id === courtId ? { ...c, isVisible: !c.isVisible } : c
-			)
-		);
 	};
 
 	const handleDeleteCourt = (court: any) => {
@@ -153,7 +136,6 @@ export default function OrganizationPage() {
 	const confirmDelete = () => {
 		if (courtToDelete) {
 			dispatch(deleteCourt(courtToDelete.id));
-			setCourts(courts.filter((c) => c.id !== courtToDelete.id));
 			setDeleteConfirmOpen(false);
 			setCourtToDelete(null);
 		}
@@ -452,7 +434,7 @@ export default function OrganizationPage() {
 
 						{/* Courts List - Improved appearance with reduced height */}
 						<div className="space-y-3">
-							{courts.map((court) => (
+							{courtsFromStore.map((court) => (
 								<div key={court.id}>
 									{editingCourt?.id === court.id ? (
 										<CourtFormEdit
