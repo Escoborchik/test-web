@@ -172,18 +172,8 @@ export default function OrganizationPage() {
 				{/* Tabs */}
 				<Tabs value={activeTab} onValueChange={setActiveTab}>
 					<TabsList className="bg-card border border-border">
-						<TabsTrigger
-							value="info"
-							className="data-[state=active]:border-b-2 data-[state=active]:border-accent"
-						>
-							Общая информация
-						</TabsTrigger>
-						<TabsTrigger
-							value="courts"
-							className="data-[state=active]:border-b-2 data-[state=active]:border-accent"
-						>
-							Корты
-						</TabsTrigger>
+						<TabsTrigger value="info">Общая информация</TabsTrigger>
+						<TabsTrigger value="courts">Корты</TabsTrigger>
 					</TabsList>
 
 					{/* General Information Tab */}
@@ -365,7 +355,7 @@ export default function OrganizationPage() {
 							<h3 className="text-lg font-semibold text-primary mb-4">
 								Реквизиты
 							</h3>
-							<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+							<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
 								<div className="space-y-2">
 									<Label htmlFor="account">
 										Расчетный счет
@@ -377,11 +367,21 @@ export default function OrganizationPage() {
 								</div>
 
 								<div className="space-y-2">
+									<Label htmlFor="correspondent">
+										Корреспондентский счет
+									</Label>
+									<Input
+										id="correspondent"
+										defaultValue="40702810123456789012"
+									/>
+								</div>
+
+								<div className="space-y-2">
 									<Label htmlFor="bik">БИК</Label>
 									<Input id="bik" defaultValue="044525225" />
 								</div>
 
-								<div className="md:col-span-2 space-y-2">
+								<div className="space-y-2">
 									<Label htmlFor="bank">Банк</Label>
 									<Input
 										id="bank"
