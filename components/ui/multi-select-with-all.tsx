@@ -21,37 +21,52 @@ interface MultiSelectWithAllProps {
 	onChange: (selected: string[]) => void;
 	placeholder?: string;
 	className?: string;
+	defaultToAll?: boolean;
 }
 
 export function MultiSelectWithAll({
 	options,
 	selected,
 	onChange,
+	defaultToAll,
 	placeholder = 'Выберите...',
 	className,
 }: MultiSelectWithAllProps) {
 	const [open, setOpen] = React.useState(false);
 
-	const allSelected = selected.length === options.length;
+	// Если ничего не выбрано и defaultToAll включен, считаем что все выбраны
+	const isAllSelectedByDefault =
+		selected.length === 0 && defaultToAll === true;
+	const isAllSelectedExplicitly = selected.length === options.length;
+	const allSelected = isAllSelectedExplicitly || isAllSelectedByDefault;
 
 	const handleSelectAll = () => {
-		if (allSelected) {
+		if (allSelected && !defaultToAll) {
+			// Если все выбраны (явно или по умолчанию), очищаем массив
 			onChange([]);
 		} else {
+			// Иначе выбираем все
 			onChange(options.map((opt) => opt.value));
 		}
 	};
 
 	const handleSelect = (value: string) => {
-		const newSelected = selected.includes(value)
-			? selected.filter((item) => item !== value)
-			: [...selected, value];
-		onChange(newSelected);
+		// Если ничего не выбрано и defaultToAll включен, добавляем элемент
+		// (тем самым убирая состояние "все по умолчанию")
+		if (isAllSelectedByDefault) {
+			onChange([value]);
+		} else {
+			const newSelected = selected.includes(value)
+				? selected.filter((item) => item !== value)
+				: [...selected, value];
+			onChange(newSelected);
+		}
 	};
 
 	const handleRemove = (value: string, e: React.MouseEvent) => {
 		e.stopPropagation();
-		onChange(selected.filter((item) => item !== value));
+		const newSelected = selected.filter((item) => item !== value);
+		onChange(newSelected);
 	};
 
 	const handleClearAll = (e: React.MouseEvent) => {
@@ -76,7 +91,7 @@ export function MultiSelectWithAll({
 					)}
 				>
 					<div className="flex items-center gap-1.5 flex-wrap flex-1 min-w-0">
-						{selected.length === 0 ? (
+						{selected.length === 0 && !defaultToAll ? (
 							<span className="text-muted-foreground">
 								{placeholder}
 							</span>
@@ -91,7 +106,7 @@ export function MultiSelectWithAll({
 						)}
 					</div>
 					<div className="flex items-center gap-1 ml-2 shrink-0">
-						{selected.length > 0 && (
+						{allSelected && !defaultToAll && (
 							<div
 								onClick={handleClearAll}
 								onPointerDown={(e) => {

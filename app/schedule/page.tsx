@@ -6,7 +6,7 @@ import { BookingSlotDrawer } from '@/components/booking-slot-drawer';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Card } from '@/components/ui/card';
-import { MultiSelect } from '@/components/ui/multi-select';
+import { MultiSelectWithAll } from '@/components/ui/multi-select-with-all';
 import {
 	Popover,
 	PopoverContent,
@@ -82,7 +82,9 @@ export default function SchedulePage() {
 	const [selectedCourtType, setSelectedCourtType] = useState('all');
 	const [selectedSport, setSelectedSport] = useState('all');
 	const [selectedCoverType, setSelectedCoverType] = useState('all');
-	const [selectedCourts, setSelectedCourts] = useState<string[]>([]);
+	const [selectedCourts, setSelectedCourts] = useState<string[]>(
+		allCourts.map((court) => court.id)
+	);
 	const [addBookingDrawerOpen, setAddBookingDrawerOpen] = useState(false);
 	const [selectedSlot, setSelectedSlot] = useState<any>(null);
 	const [bookingSlotDrawerOpen, setBookingSlotDrawerOpen] = useState(false);
@@ -274,7 +276,18 @@ export default function SchedulePage() {
 						</div>
 
 						<div className=" min-w-[250px]">
-							<MultiSelect
+							<MultiSelectWithAll
+								defaultToAll
+								options={allCourts.map((court) => ({
+									label: court.name,
+									value: court.id,
+								}))}
+								selected={selectedCourts}
+								onChange={setSelectedCourts}
+								placeholder="Все корты"
+								className="w-[200px] h-9"
+							/>
+							{/* <MultiSelect
 								options={allCourts.map((court) => ({
 									label: court.name,
 									value: court.id,
@@ -283,7 +296,7 @@ export default function SchedulePage() {
 								onChange={setSelectedCourts}
 								placeholder="Все корты"
 								className="h-9"
-							/>
+							/> */}
 						</div>
 
 						<div className="flex flex-1 items-center justify-end">
