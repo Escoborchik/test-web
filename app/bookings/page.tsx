@@ -186,7 +186,7 @@ export default function BookingsPage() {
 					<TabsList className="bg-card border border-border">
 						<TabsTrigger
 							value="pending"
-							className="data-[state=active]:border-b-2 data-[state=active]:border-accent"
+							className="data-[state=active]:bg-white"
 						>
 							Ожидающие
 							<Badge
@@ -198,7 +198,7 @@ export default function BookingsPage() {
 						</TabsTrigger>
 						<TabsTrigger
 							value="confirmed"
-							className="data-[state=active]:border-b-2 data-[state=active]:border-accent"
+							className="data-[state=active]:bg-white"
 						>
 							Подтверждённые
 						</TabsTrigger>

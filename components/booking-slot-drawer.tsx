@@ -10,11 +10,12 @@ import {
 	DialogTitle,
 } from '@/components/ui/dialog';
 import { COVER_TYPE_LABELS, RuShortDays, SPORT_TYPE_LABELS } from '@/constants';
-import { useAppDispatch } from '@/store';
+import { useAppDispatch, useAppSelector } from '@/store';
 import {
 	deleteDateFromRecurringBooking,
 	updateStatusBooking,
 } from '@/store/bookingsManagment';
+import { selectTariffs } from '@/store/tariffsManagment';
 import { CoverType, SportType } from '@/types';
 import { Booking, ShortDays } from '@/types/booking';
 import { format } from 'date-fns';
@@ -25,6 +26,7 @@ import {
 	MapPin,
 	Phone,
 	RussianRuble,
+	Tag,
 	User,
 	X,
 } from 'lucide-react';
@@ -51,6 +53,8 @@ export function BookingSlotDrawer({
 	onClose,
 }: BookingSlotDrawerProps) {
 	const dispatch = useAppDispatch();
+	const tariffs = useAppSelector(selectTariffs);
+	const tariff = tariffs.find((tariff) => tariff.id === booking?.tariffId);
 	const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
 	const handleConfirm = () => {
 		setConfirmDialogOpen(true);
@@ -314,6 +318,22 @@ export function BookingSlotDrawer({
 								Информация о бронировании
 							</h3>
 							<div className="space-y-3 p-3 bg-accent/5 rounded-lg border border-accent/20">
+								{tariff && !booking.isRecurring && (
+									<div className="flex items-center gap-3">
+										<div className="w-9 h-9 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0">
+											<Tag className="h-5 w-5 text-accent" />
+										</div>
+										<div className="flex-1 min-w-0">
+											<p className="text-sm font-medium text-foreground">
+												«{tariff?.title}»
+											</p>
+											<p className="text-xs text-muted-foreground">
+												Тариф
+											</p>
+										</div>
+									</div>
+								)}
+
 								<div className="flex items-center gap-3">
 									<div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
 										<Clock className="h-5 w-5 text-primary" />
@@ -370,11 +390,24 @@ export function BookingSlotDrawer({
 								{booking.isRecurring && (
 									<>
 										<div className="pt-2 border-t border-accent/20">
-											<Badge className="bg-accent/20 text-accent border border-accent/40 mb-3 px-3 py-1.5">
-												Повторяющееся бронирование
-											</Badge>
-
 											<div className="space-y-2.5 pl-1">
+												{tariff && (
+													<div className="flex items-center gap-3">
+														<div className="w-9 h-9 rounded-full bg-accent/15 flex items-center justify-center flex-shrink-0">
+															<Tag className="h-4 w-4 text-accent" />
+														</div>
+														<div className="flex-1 min-w-0">
+															<p className="text-sm font-medium text-foreground">
+																«{tariff?.title}
+																»
+															</p>
+															<p className="text-xs text-muted-foreground">
+																Тариф
+															</p>
+														</div>
+													</div>
+												)}
+
 												{booking.price && (
 													<div className="flex items-center gap-3">
 														<div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">

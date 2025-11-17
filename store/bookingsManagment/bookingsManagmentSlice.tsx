@@ -20,6 +20,7 @@ const initialState: BookingManagmentState = {
 			price: 3600,
 			status: 'confirmed',
 			isRecurring: false,
+			tariffId: 'tariff-single-visit',
 			extras: [],
 		},
 		{
@@ -35,6 +36,7 @@ const initialState: BookingManagmentState = {
 			price: 4200,
 			status: 'pending',
 			isRecurring: false,
+			tariffId: 'tariff-single-visit',
 			extras: [],
 		},
 		{
@@ -57,6 +59,7 @@ const initialState: BookingManagmentState = {
 			price: 3200,
 			status: 'confirmed',
 			isRecurring: true,
+			tariffId: 'tariff-many-visit',
 			extras: [],
 			recurringDetails: {
 				startDate: '2025-11-12',
@@ -78,6 +81,7 @@ const initialState: BookingManagmentState = {
 			price: 5200,
 			status: 'pending',
 			isRecurring: false,
+			tariffId: 'tariff-single-visit',
 			extras: [],
 		},
 		{
@@ -93,6 +97,7 @@ const initialState: BookingManagmentState = {
 			price: 3200,
 			status: 'confirmed',
 			isRecurring: true,
+			tariffId: 'tariff-many-visit',
 			extras: [],
 			recurringDetails: {
 				startDate: '2025-11-24',
@@ -113,6 +118,7 @@ const initialState: BookingManagmentState = {
 			duration: 2,
 			price: 3200,
 			status: 'pending-payment',
+			tariffId: 'tariff-single-visit',
 			isRecurring: false,
 			extras: [],
 		},

@@ -1283,6 +1283,85 @@ export function AddBookingDrawer({
 
 					{/* Footer Actions - Reduced padding */}
 					<div className="p-4 border-t border-border space-y-2">
+						{totalPriceBooking > 0 && (
+							<div className="p-3 bg-primary/10 rounded-lg border border-primary/30 mb-3">
+								<div className="space-y-1.5">
+									<div className="flex items-center justify-between text-sm">
+										<span className="text-muted-foreground">
+											Бронирование:
+										</span>
+										<span className="font-medium">
+											{totalPriceBooking.toLocaleString()}{' '}
+											₽
+										</span>
+									</div>
+									{selectedExtras.length > 0 && (
+										<div className="space-y-1">
+											<div className="flex items-center justify-between text-sm font-medium text-foreground pt-0.5">
+												<span>Услуги:</span>
+												<span>
+													{totalExtraPrice.toLocaleString()}{' '}
+													₽
+												</span>
+											</div>
+											{selectedExtras.map(
+												({ extraId, quantity }) => {
+													const extra = extras.find(
+														(ext) =>
+															ext.id === extraId
+													);
+													if (!extra) return null;
+
+													const extraPrice =
+														extra.unit === 'hour'
+															? extra.price *
+															  calculateDuration()
+															: extra.price;
+													const totalExtraPrice =
+														isRecurring
+															? extraPrice *
+															  quantity *
+															  calculateTotalBookings()
+															: extraPrice *
+															  quantity;
+
+													return (
+														<div
+															key={extraId}
+															className="flex items-start justify-between text-xs text-muted-foreground pl-3"
+														>
+															<span className="flex-1">
+																• {extra.title}{' '}
+																× {quantity}{' '}
+																{isRecurring &&
+																	` × ${calculateTotalBookings()} занятий`}
+															</span>
+															<span className="font-medium ml-2">
+																{totalExtraPrice.toLocaleString()}{' '}
+																₽
+															</span>
+														</div>
+													);
+												}
+											)}
+										</div>
+									)}
+									<div className="pt-1.5 mt-1.5 border-t border-primary/20 flex items-center justify-between">
+										<span className="text-sm font-semibold text-foreground">
+											Итоговая сумма:
+										</span>
+										<span className="text-base font-bold text-primary">
+											{(
+												totalExtraPrice +
+												totalPriceBooking
+											).toLocaleString()}{' '}
+											₽
+										</span>
+									</div>
+								</div>
+							</div>
+						)}
+
 						<Button
 							className="w-full bg-[#1E7A4C] hover:bg-[#1E7A4C]/90 text-white"
 							onClick={() => setConfirmDialogOpen(true)}
@@ -1392,6 +1471,7 @@ export function AddBookingDrawer({
 									price,
 									status: 'pending-payment' as BookingStatus,
 									isRecurring,
+									tariffId: selectedTariff,
 									extras: selectedExtras,
 								};
 
