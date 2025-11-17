@@ -20,6 +20,7 @@ const initialState: BookingManagmentState = {
 			price: 3600,
 			status: 'confirmed',
 			isRecurring: false,
+			extras: [],
 		},
 		{
 			id: 'booking-4',
@@ -34,6 +35,7 @@ const initialState: BookingManagmentState = {
 			price: 4200,
 			status: 'pending',
 			isRecurring: false,
+			extras: [],
 		},
 		{
 			id: 'booking-5',
@@ -55,6 +57,7 @@ const initialState: BookingManagmentState = {
 			price: 3200,
 			status: 'confirmed',
 			isRecurring: true,
+			extras: [],
 			recurringDetails: {
 				startDate: '2025-11-12',
 				endDate: '2025-11-29',
@@ -75,6 +78,7 @@ const initialState: BookingManagmentState = {
 			price: 5200,
 			status: 'pending',
 			isRecurring: false,
+			extras: [],
 		},
 		{
 			id: 'booking-3',
@@ -89,6 +93,7 @@ const initialState: BookingManagmentState = {
 			price: 3200,
 			status: 'confirmed',
 			isRecurring: true,
+			extras: [],
 			recurringDetails: {
 				startDate: '2025-11-24',
 				endDate: '2025-12-22',
@@ -109,6 +114,7 @@ const initialState: BookingManagmentState = {
 			price: 3200,
 			status: 'pending-payment',
 			isRecurring: false,
+			extras: [],
 		},
 	],
 };

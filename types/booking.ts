@@ -13,6 +13,11 @@ export type BookingStatus =
 	| 'confirmed'
 	| 'pending-payment';
 
+export interface ExtraBooking {
+	extraId: string;
+	quantity: number;
+}
+
 export interface Booking {
 	id: string;
 	firstName: string;
@@ -26,6 +31,7 @@ export interface Booking {
 	price: number;
 	status: BookingStatus;
 	isRecurring: boolean;
+	extras: ExtraBooking[];
 
 	recurringDetails?: RecurringDetails;
 }

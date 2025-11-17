@@ -12,7 +12,7 @@ const initialState: extrasManagmentState = {
 			title: 'Аренда ракетки',
 			price: 300,
 			unit: 'hour',
-			amount: 1,
+			amount: 5,
 		},
 		{
 			id: 'extra-coach-session',

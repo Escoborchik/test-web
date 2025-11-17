@@ -9,8 +9,23 @@ import { Switch } from '@/components/ui/switch';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { createBooking } from '@/store/bookingsManagment';
 import { selectCourts } from '@/store/courtsManagment';
-import { Booking, BookingStatus, ShortDays } from '@/types/booking';
-import { CalendarIcon, Mail, MapPin, Phone, User, X } from 'lucide-react';
+import {
+	Booking,
+	BookingStatus,
+	ExtraBooking,
+	ShortDays,
+} from '@/types/booking';
+import {
+	CalendarIcon,
+	Mail,
+	MapPin,
+	Minus,
+	Package,
+	Phone,
+	Plus,
+	User,
+	X,
+} from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 import { Calendar } from '@/components/ui/calendar';
@@ -27,7 +42,12 @@ import {
 	PopoverTrigger,
 } from '@/components/ui/popover';
 import { TimePicker } from '@/components/ui/timepicker';
-import { COVER_TYPE_LABELS, SPORT_TYPE_LABELS } from '@/constants';
+import {
+	COVER_TYPE_LABELS,
+	SPORT_TYPE_LABELS,
+	UNIT_TYPE_LABELS,
+} from '@/constants';
+import { selectExtras } from '@/store/extrasManagment';
 import { CoverType, SportType } from '@/types';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
@@ -187,6 +207,50 @@ export function AddBookingDrawer({
 }: AddBookingDrawerProps) {
 	const dispatch = useAppDispatch();
 	const courts = useAppSelector(selectCourts);
+	const extras = useAppSelector(selectExtras);
+
+	const [selectedExtras, setSelectedExtras] = useState<ExtraBooking[]>([]);
+
+	const addExtra = (extraId: string) => {
+		setSelectedExtras((prevState) => [
+			...prevState,
+			{ extraId, quantity: 1 },
+		]);
+	};
+
+	const incrementExtra = (extraId: string) => {
+		setSelectedExtras((prevState) =>
+			prevState.map((extra) => {
+				if (extra.extraId === extraId)
+					return { ...extra, quantity: extra.quantity + 1 };
+				return extra;
+			})
+		);
+	};
+
+	const decrementService = (extraId: string) => {
+		const extraForDeleting = selectedExtras.findIndex(
+			(selectedExtra) =>
+				selectedExtra.extraId === extraId &&
+				selectedExtra.quantity === 1
+		);
+
+		if (extraForDeleting !== -1) {
+			setSelectedExtras((prevState) =>
+				prevState.filter((_, index) => index !== extraForDeleting)
+			);
+		} else {
+			setSelectedExtras((prevState) =>
+				prevState.map((extra) => {
+					if (extra.extraId === extraId) {
+						return { ...extra, quantity: extra.quantity - 1 };
+					}
+					return extra;
+				})
+			);
+		}
+	};
+
 	const [clientInfo, setClientInfo] = useState({
 		firstName: '',
 		lastName: '',
@@ -998,6 +1062,116 @@ export function AddBookingDrawer({
 									)}
 								</div>
 							</div>
+							{extras.length > 0 && (
+								<div className="space-y-3">
+									<h3 className="text-sm font-semibold text-primary">
+										Дополнительные услуги
+									</h3>
+									<div className="space-y-2 p-3 bg-accent/5 rounded-lg border border-accent/20">
+										{extras.map((extra) => {
+											const quantity =
+												selectedExtras.find(
+													(selectedExtra) =>
+														selectedExtra.extraId ===
+														extra.id
+												)?.quantity || 0;
+											const extraPrice =
+												extra.unit === 'hour'
+													? extra.price * duration
+													: extra.price;
+
+											return (
+												<div
+													key={extra.id}
+													className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50 transition-colors"
+												>
+													<div className="flex items-center gap-3 flex-1">
+														<div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0">
+															<Package className="h-4 w-4 text-accent" />
+														</div>
+														<div className="flex-1 min-w-0">
+															<p className="text-sm font-medium text-foreground">
+																{extra.title}
+															</p>
+															<p className="text-xs text-muted-foreground">
+																{extra.price} ₽/
+																{
+																	UNIT_TYPE_LABELS[
+																		extra
+																			.unit
+																	]
+																}
+															</p>
+														</div>
+													</div>
+
+													<div className="flex items-center gap-2">
+														{quantity > 0 ? (
+															<>
+																<Button
+																	variant="outline"
+																	size="icon"
+																	className="h-7 w-7"
+																	onClick={() =>
+																		decrementService(
+																			extra.id
+																		)
+																	}
+																>
+																	<Minus className="h-3 w-3" />
+																</Button>
+																<span className="text-sm font-medium w-6 text-center">
+																	{quantity}
+																</span>
+																<Button
+																	variant="outline"
+																	size="icon"
+																	className="h-7 w-7"
+																	onClick={() =>
+																		incrementExtra(
+																			extra.id
+																		)
+																	}
+																	disabled={
+																		quantity >=
+																		extra.amount
+																	}
+																>
+																	<Plus className="h-3 w-3" />
+																</Button>
+															</>
+														) : (
+															<Button
+																variant="outline"
+																size="sm"
+																className="h-7 px-3 text-xs"
+																onClick={() =>
+																	selectedExtras.findIndex(
+																		(
+																			selectedExtra
+																		) =>
+																			selectedExtra.extraId ===
+																			extra.id
+																	) === -1
+																		? addExtra(
+																				extra.id
+																		  )
+																		: incrementExtra(
+																				extra.id
+																		  )
+																}
+															>
+																<Plus className="h-3 w-3 mr-1" />
+																Добавить
+															</Button>
+														)}
+													</div>
+												</div>
+											);
+										})}
+									</div>
+								</div>
+							)}
 						</div>
 					</div>
 
@@ -1112,6 +1286,7 @@ export function AddBookingDrawer({
 									price,
 									status: 'pending-payment' as BookingStatus,
 									isRecurring,
+									extras: selectedExtras,
 								};
 
 								if (isRecurring) {
