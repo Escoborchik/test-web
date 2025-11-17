@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
 import { AdminLayout } from '@/components/admin-layout';
-import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
 	Select,
 	SelectContent,
@@ -11,17 +12,16 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { DollarSign, TrendingUp, Calendar, BarChart3 } from 'lucide-react';
+import { BarChart3, Calendar, RussianRuble, TrendingUp } from 'lucide-react';
+import { useState } from 'react';
 import {
 	Bar,
 	BarChart,
+	CartesianGrid,
 	ResponsiveContainer,
+	Tooltip,
 	XAxis,
 	YAxis,
-	Tooltip,
-	CartesianGrid,
 } from 'recharts';
 
 // Mock data
@@ -134,7 +134,7 @@ export default function AnalyticsPage() {
 								</p>
 							</div>
 							<div className="w-12 h-12 rounded-lg bg-accent/10 flex items-center justify-center">
-								<DollarSign className="h-6 w-6 text-accent" />
+								<RussianRuble className="h-6 w-6 text-accent" />
 							</div>
 						</div>
 					</Card>
