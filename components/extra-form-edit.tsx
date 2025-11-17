@@ -50,7 +50,6 @@ export const ExtraFormEdit = ({
 					</Label>
 					<Input
 						id="price"
-						type="number"
 						value={formData.price}
 						onChange={(e) =>
 							setFormData({
@@ -76,7 +75,7 @@ export const ExtraFormEdit = ({
 							})
 						}
 					>
-						<SelectTrigger className="h-9">
+						<SelectTrigger className="h-9 w-full">
 							<SelectValue placeholder="Выберите единицу" />
 						</SelectTrigger>
 						<SelectContent>
