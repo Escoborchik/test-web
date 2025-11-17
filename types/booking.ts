@@ -31,6 +31,7 @@ export interface Booking {
 	price: number;
 	status: BookingStatus;
 	isRecurring: boolean;
+	tariffId: string;
 	extras: ExtraBooking[];
 
 	recurringDetails?: RecurringDetails;
