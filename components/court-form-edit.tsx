@@ -5,7 +5,7 @@ import { Court, CoverType, PriceDayGroup, PriceSlot, SportType } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { useState } from 'react';
 
 import {
@@ -15,9 +15,8 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '@/components/ui/select';
-import { TimePicker } from '@/components/ui/timepicker';
 import { COVER_TYPE_LABELS, SPORT_TYPE_LABELS } from '@/constants';
-import { Building2, Plus, Upload, X } from 'lucide-react';
+import { Building2, Upload } from 'lucide-react';
 
 interface CourtFormEditProps {
 	court: Court;
@@ -104,12 +103,9 @@ export const CourtFormEdit = ({
 	return (
 		<div className="space-y-4 p-4 bg-white rounded-lg border-2 border-primary shadow-md">
 			<Tabs defaultValue="basic" className="w-full">
-				<TabsList className="grid w-full grid-cols-2">
-					<TabsTrigger value="basic">Основная информация</TabsTrigger>
-					<TabsTrigger value="pricing">Ценовая политика</TabsTrigger>
-				</TabsList>
+				{/* <TabsTrigger value="pricing">Ценовая политика</TabsTrigger> */}
 
-				<TabsContent value="basic" className="space-y-3 mt-4">
+				<TabsContent value="basic" className="space-y-3">
 					<div className="flex gap-3">
 						<div className="lg:w-64 shrink-0">
 							<h3 className="text-base font-semibold text-primary mb-3">
@@ -364,7 +360,7 @@ export const CourtFormEdit = ({
 				</TabsContent>
 
 				{/* Pricing */}
-				<TabsContent value="pricing" className="space-y-3 mt-4">
+				{/* <TabsContent value="pricing" className="space-y-3 mt-4">
 					<div className="space-y-3">
 						<div>
 							<div className="flex items-center justify-between mb-2">
@@ -509,7 +505,7 @@ export const CourtFormEdit = ({
 							))}
 						</div>
 					</div>
-				</TabsContent>
+				</TabsContent> */}
 			</Tabs>
 
 			<div className="flex gap-2 justify-end">

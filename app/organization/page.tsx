@@ -610,10 +610,8 @@ export default function OrganizationPage() {
 												</div>
 											</div>
 
-											<div className="space-y-2 text-sm">
-												{/* Court Details */}
-
-												{/* Pricing - Side by side layout */}
+											{/* Court Details */}
+											{/* <div className="space-y-2 text-sm">
 												<div className="grid grid-cols-2 gap-4 pt-2">
 													<div>
 														<p className="text-sm font-medium text-foreground mb-1">
@@ -658,7 +656,7 @@ export default function OrganizationPage() {
 														)}
 													</div>
 												</div>
-											</div>
+											</div> */}
 										</Card>
 									)}
 								</div>
