@@ -4,5 +4,5 @@ export interface Tariff {
 	id: string;
 	title: string;
 	prices: Record<'weekdays' | 'weekends', PriceSlot[]>;
-	courtIds: string[];
+	isActive: boolean;
 }

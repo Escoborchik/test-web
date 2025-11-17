@@ -22,11 +22,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { TimePicker } from '@/components/ui/timepicker';
 import {
-	Tooltip,
-	TooltipContent,
-	TooltipTrigger,
-} from '@/components/ui/tooltip';
-import {
 	COVER_TYPE_LABELS,
 	SPORT_TYPE_LABELS,
 	UNIT_TYPE_LABELS,
@@ -48,6 +43,7 @@ import {
 import {
 	addTariff,
 	deleteTariff,
+	updateActive,
 	updateTariff,
 } from '@/store/tariffsManagment';
 import { Court, Extra, PriceSlot, Tariff } from '@/types';
@@ -188,6 +184,9 @@ export default function OrganizationPage() {
 	const handleDeleteTariff = (tariff: any) => {
 		setTariffToDelete(tariff);
 		setDeleteConfirmOpen({ typeState: 'tariff', realState: true });
+	};
+	const toggleTariffActive = (tariffId: string) => {
+		dispatch(updateActive(tariffId));
 	};
 
 	const handleSaveExtra = (extraData: Extra) => {
@@ -696,7 +695,7 @@ export default function OrganizationPage() {
 											}
 										/>
 									) : (
-										<Card className="p-4">
+										<Card className="p-4 gap-4">
 											<div className="flex items-start justify-between mb-2">
 												<div className="flex items-center gap-3">
 													<div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center">
@@ -706,7 +705,7 @@ export default function OrganizationPage() {
 														<h4 className="text-base font-semibold text-primary">
 															{tariff.title}
 														</h4>
-														<Tooltip>
+														{/* <Tooltip>
 															<TooltipTrigger
 																asChild
 															>
@@ -759,7 +758,7 @@ export default function OrganizationPage() {
 																	)}
 																</div>
 															</TooltipContent>
-														</Tooltip>
+														</Tooltip> */}
 													</div>
 												</div>
 												<div className="flex gap-2">
@@ -779,6 +778,23 @@ export default function OrganizationPage() {
 													<Button
 														variant="outline"
 														size="icon"
+														className="h-8 w-8 bg-transparent"
+														onClick={() =>
+															toggleTariffActive(
+																tariff.id
+															)
+														}
+													>
+														{tariff.isActive ? (
+															<Eye className="h-4 w-4" />
+														) : (
+															<EyeOff className="h-4 w-4" />
+														)}
+													</Button>
+
+													<Button
+														variant="outline"
+														size="icon"
 														className="text-destructive hover:text-destructive bg-transparent h-8 w-8"
 														onClick={() =>
 															handleDeleteTariff(
@@ -793,7 +809,7 @@ export default function OrganizationPage() {
 
 											<div className="space-y-2 text-sm">
 												{/* Pricing - Side by side layout */}
-												<div className="grid grid-cols-2 gap-4 pt-2">
+												<div className="grid grid-cols-2 gap-4 pb-2">
 													<div>
 														<p className="text-sm font-medium text-foreground mb-1">
 															Будни (Пн-Пт)

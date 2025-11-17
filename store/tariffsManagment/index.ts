@@ -1,5 +1,10 @@
 // actions
-export { addTariff, deleteTariff, updateTariff } from './tariffsManagmentSlice';
+export {
+	addTariff,
+	deleteTariff,
+	updateActive,
+	updateTariff,
+} from './tariffsManagmentSlice';
 
 // selectors
 export { selectTariffs } from './tariffsManagmentSlice';
