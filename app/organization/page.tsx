@@ -3,6 +3,8 @@
 import { AdminLayout } from '@/components/admin-layout';
 import { CourtFormCreate } from '@/components/court-form-create';
 import { CourtFormEdit } from '@/components/court-form-edit';
+import { ExtraFormCreate } from '@/components/extra-form-create';
+import { ExtraFormEdit } from '@/components/extra-form-edit';
 import { TariffFormCreate } from '@/components/tariff-form-create';
 import { TariffFormEdit } from '@/components/tariff-form-edit';
 import { Button } from '@/components/ui/button';
@@ -24,7 +26,11 @@ import {
 	TooltipContent,
 	TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { COVER_TYPE_LABELS, SPORT_TYPE_LABELS } from '@/constants';
+import {
+	COVER_TYPE_LABELS,
+	SPORT_TYPE_LABELS,
+	UNIT_TYPE_LABELS,
+} from '@/constants';
 import { cn } from '@/lib/utils';
 import { useAppDispatch, useAppSelector } from '@/store';
 import {
@@ -34,16 +40,23 @@ import {
 	updateVisible,
 } from '@/store/courtsManagment';
 import {
+	addExtra,
+	deleteExtra,
+	selectExtras,
+	updateExtra,
+} from '@/store/extrasManagment';
+import {
 	addTariff,
 	deleteTariff,
 	updateTariff,
 } from '@/store/tariffsManagment';
-import { Court, PriceSlot, Tariff } from '@/types';
+import { Court, Extra, PriceSlot, Tariff } from '@/types';
 import {
 	Building2,
 	Edit2,
 	Eye,
 	EyeOff,
+	Package,
 	Plus,
 	Tag,
 	Trash2,
@@ -106,17 +119,26 @@ export default function OrganizationPage() {
 		(state) => state.tariffsManagment.tariffs
 	);
 
+	const extrasFromStore = useAppSelector(selectExtras);
+
 	const [activeTab, setActiveTab] = useState('info');
+
 	const [editingCourt, setEditingCourt] = useState<any>(null);
 	const [isAddingCourt, setIsAddingCourt] = useState(false);
+	const [courtToDelete, setCourtToDelete] = useState<any>(null);
+
 	const [editingTariff, setEditingTariff] = useState<any>(null);
 	const [isAddingTariff, setIsAddingTariff] = useState(false);
+	const [tariffToDelete, setTariffToDelete] = useState<any>(null);
+
+	const [editingExtra, setEditingExtra] = useState<any>(null);
+	const [isAddingExtra, setIsAddingExtra] = useState(false);
+	const [extraToDelete, setExtraToDelete] = useState<any>(null);
+
 	const [deleteConfirmOpen, setDeleteConfirmOpen] = useState<{
-		typeState: 'tariff' | 'court';
+		typeState: 'tariff' | 'court' | 'extra';
 		realState: boolean;
 	}>({ typeState: 'court', realState: false });
-	const [courtToDelete, setCourtToDelete] = useState<any>(null);
-	const [tariffToDelete, setTariffToDelete] = useState<any>(null);
 
 	const [selectedAmenitiesId, setSelectedAmenitiesId] = useState([
 		'parking',
@@ -133,12 +155,23 @@ export default function OrganizationPage() {
 		}
 	};
 
+	const toggleCourtVisibility = (courtId: string) => {
+		dispatch(updateVisible(courtId));
+	};
 	const handleSaveCourt = (courtData: Court) => {
 		if (editingCourt) {
 			dispatch(updateCourt(courtData));
 
 			setEditingCourt(null);
 		}
+	};
+	const handleAddCourt = (courtData: Court) => {
+		dispatch(addCourt(courtData));
+		setIsAddingCourt(false);
+	};
+	const handleDeleteCourt = (court: any) => {
+		setCourtToDelete(court);
+		setDeleteConfirmOpen({ typeState: 'court', realState: true });
 	};
 
 	const handleSaveTariff = (tariffData: Tariff) => {
@@ -148,43 +181,49 @@ export default function OrganizationPage() {
 			setEditingTariff(false);
 		}
 	};
-
-	const handleAddCourt = (courtData: Court) => {
-		dispatch(addCourt(courtData));
-		setIsAddingCourt(false);
-	};
-
 	const handleAddTariff = (tariffData: Tariff) => {
 		dispatch(addTariff(tariffData));
 		setIsAddingTariff(false);
 	};
-
-	const toggleCourtVisibility = (courtId: string) => {
-		dispatch(updateVisible(courtId));
-	};
-
-	const handleDeleteCourt = (court: any) => {
-		setCourtToDelete(court);
-		setDeleteConfirmOpen({ typeState: 'court', realState: true });
-	};
-
 	const handleDeleteTariff = (tariff: any) => {
 		setTariffToDelete(tariff);
 		setDeleteConfirmOpen({ typeState: 'tariff', realState: true });
 	};
 
-	const confirmDelete = (typeState: 'tariff' | 'court') => {
+	const handleSaveExtra = (extraData: Extra) => {
+		if (extraData) {
+			dispatch(updateExtra(extraData));
+
+			setEditingExtra(false);
+		}
+	};
+	const handleAddExtra = (extraData: Extra) => {
+		dispatch(addExtra(extraData));
+		setIsAddingExtra(false);
+	};
+	const handleDeleteExtra = (extra: any) => {
+		setExtraToDelete(extra);
+		setDeleteConfirmOpen({ typeState: 'extra', realState: true });
+	};
+
+	const confirmDelete = (typeState: 'tariff' | 'court' | 'extra') => {
 		if (typeState === 'court') {
 			if (courtToDelete) {
 				dispatch(deleteCourt(courtToDelete.id));
 				setDeleteConfirmOpen({ typeState: 'court', realState: false });
 				setCourtToDelete(null);
 			}
-		} else {
+		} else if (typeState === 'tariff') {
 			if (tariffToDelete) {
 				dispatch(deleteTariff(tariffToDelete.id));
 				setDeleteConfirmOpen({ typeState: 'tariff', realState: false });
 				setTariffToDelete(null);
+			}
+		} else {
+			if (extraToDelete) {
+				dispatch(deleteExtra(extraToDelete.id));
+				setDeleteConfirmOpen({ typeState: 'extra', realState: false });
+				setExtraToDelete(null);
 			}
 		}
 	};
@@ -205,6 +244,7 @@ export default function OrganizationPage() {
 						<TabsTrigger value="info">Общая информация</TabsTrigger>
 						<TabsTrigger value="courts">Корты</TabsTrigger>
 						<TabsTrigger value="tariffs">Тарифы</TabsTrigger>
+						<TabsTrigger value="extras">Доп. Услуги</TabsTrigger>
 					</TabsList>
 
 					{/* General Information Tab */}
@@ -798,6 +838,94 @@ export default function OrganizationPage() {
 															)
 														)}
 													</div>
+												</div>
+											</div>
+										</Card>
+									)}
+								</div>
+							))}
+						</div>
+					</TabsContent>
+
+					<TabsContent value="extras" className="mt-4 space-y-4">
+						<div className="flex justify-end">
+							<Button
+								className="gap-2 bg-[#1E7A4C] hover:bg-[#1E7A4C]/90 text-white"
+								onClick={() => setIsAddingExtra(true)}
+								disabled={isAddingExtra || editingExtra}
+							>
+								<Plus className="h-4 w-4" />
+								Добавить тарифф
+							</Button>
+						</div>
+
+						{/* Add Extra Form */}
+						{isAddingExtra && (
+							<ExtraFormCreate
+								onAdd={handleAddExtra}
+								onCancel={() => setIsAddingExtra(false)}
+							/>
+						)}
+
+						<div className="space-y-3">
+							{extrasFromStore.map((extra) => (
+								<div key={extra.id}>
+									{editingExtra?.id === extra.id ? (
+										<ExtraFormEdit
+											extra={extra}
+											onSave={handleSaveExtra}
+											onCancel={() =>
+												setEditingExtra(null)
+											}
+										/>
+									) : (
+										<Card className="p-4">
+											<div className="flex items-start justify-between mb-2">
+												<div className="flex items-center gap-3">
+													<div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center">
+														<Package className="h-5 w-5 text-accent" />
+													</div>
+													<div>
+														<h4 className="text-base font-semibold text-primary">
+															{extra.title}
+														</h4>
+														<p className="text-sm text-muted-foreground">
+															{extra.price} ₽/
+															{
+																UNIT_TYPE_LABELS[
+																	extra.unit
+																]
+															}{' '}
+															• {extra.amount} шт
+														</p>
+													</div>
+												</div>
+												<div className="flex gap-2">
+													<Button
+														variant="outline"
+														size="icon"
+														className="h-8 w-8 bg-transparent"
+														onClick={() =>
+															setEditingExtra(
+																extra
+															)
+														}
+													>
+														<Edit2 className="h-4 w-4" />
+													</Button>
+
+													<Button
+														variant="outline"
+														size="icon"
+														className="text-destructive hover:text-destructive bg-transparent h-8 w-8"
+														onClick={() =>
+															handleDeleteExtra(
+																extra
+															)
+														}
+													>
+														<Trash2 className="h-4 w-4" />
+													</Button>
 												</div>
 											</div>
 										</Card>
