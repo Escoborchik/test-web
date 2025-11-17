@@ -5,7 +5,13 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from '@/components/ui/select';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { createBooking } from '@/store/bookingsManagment';
 import { selectCourts } from '@/store/courtsManagment';
@@ -48,6 +54,7 @@ import {
 	UNIT_TYPE_LABELS,
 } from '@/constants';
 import { selectExtras } from '@/store/extrasManagment';
+import { selectTariffs } from '@/store/tariffsManagment';
 import { CoverType, SportType } from '@/types';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
@@ -208,8 +215,10 @@ export function AddBookingDrawer({
 	const dispatch = useAppDispatch();
 	const courts = useAppSelector(selectCourts);
 	const extras = useAppSelector(selectExtras);
+	const tariffs = useAppSelector(selectTariffs);
 
 	const [selectedExtras, setSelectedExtras] = useState<ExtraBooking[]>([]);
+	const [selectedTariff, setSelectedTariff] = useState<string>(tariffs[0].id);
 
 	const addExtra = (extraId: string) => {
 		setSelectedExtras((prevState) => [
@@ -277,6 +286,20 @@ export function AddBookingDrawer({
 	};
 
 	useEffect(() => {
+		if (
+			selectedTariff === 'tariff-subscription' ||
+			selectedTariff === 'tariff-many-visit'
+		) {
+			setIsRecurring(true);
+		} else if (
+			selectedTariff === 'tariff-single-visit' ||
+			selectedTariff === 'tariff-student'
+		) {
+			setIsRecurring(false);
+		}
+	}, [selectedTariff]);
+
+	useEffect(() => {
 		if (open) {
 			document.body.classList.add('drawer-open');
 			if (slot?.time) {
@@ -300,6 +323,7 @@ export function AddBookingDrawer({
 			setSelectedDays([]);
 			setStartDate('');
 			setEndDate('');
+			setSelectedTariff(tariffs[0].id);
 			prevStartDateRef.current = '';
 			prevEndDateRef.current = '';
 		}
@@ -457,6 +481,22 @@ export function AddBookingDrawer({
 		return count;
 	};
 
+	const calculateExtraPricePerSingle = () => {
+		return selectedExtras.reduce((acc, selectedExtra) => {
+			const rightExtra = extras.find(
+				(extra) => extra.id === selectedExtra.extraId
+			);
+			if (rightExtra) {
+				acc +=
+					rightExtra.unit === 'hour'
+						? selectedExtra.quantity * rightExtra.price * duration
+						: selectedExtra.quantity * rightExtra.price;
+				return acc;
+			}
+			return acc;
+		}, 0);
+	};
+
 	const getAllowedDays = () => {
 		if (!startDate || !endDate)
 			return ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
@@ -483,9 +523,14 @@ export function AddBookingDrawer({
 	const isValidDuration = duration >= 1;
 	const totalBookings = calculateTotalBookings();
 	const allowedDays = getAllowedDays();
-	const totalPrice = isRecurring
+	const totalPriceBooking = isRecurring
 		? totalBookings * slot?.pricePerSession
 		: slot?.pricePerSession;
+
+	const extraPricePerSingle = calculateExtraPricePerSingle();
+	const totalExtraPrice = isRecurring
+		? totalBookings * extraPricePerSingle
+		: extraPricePerSingle;
 
 	if (!slot) return null;
 
@@ -708,6 +753,37 @@ export function AddBookingDrawer({
 							<div className="space-y-5 p-3 bg-accent/5 rounded-lg border border-accent/20">
 								<div className="flex flex-col gap-2 text-sm">
 									<Label className="text-sm font-medium flex items-center gap-2">
+										Тип тарифа
+									</Label>
+
+									<Select
+										value={selectedTariff}
+										onValueChange={(value) =>
+											setSelectedTariff(value)
+										}
+									>
+										<SelectTrigger className="w-full">
+											<SelectValue placeholder="Выберите тариф" />
+										</SelectTrigger>
+										<SelectContent>
+											{tariffs.map((tariff) => (
+												<SelectItem
+													key={tariff.id}
+													value={tariff.id}
+												>
+													<div className="flex items-center gap-2">
+														<span className="font-medium">
+															{tariff.title}
+														</span>
+													</div>
+												</SelectItem>
+											))}
+										</SelectContent>
+									</Select>
+								</div>
+
+								<div className="flex flex-col gap-2 text-sm">
+									<Label className="text-sm font-medium flex items-center gap-2">
 										Дата бронирования
 									</Label>
 
@@ -811,8 +887,9 @@ export function AddBookingDrawer({
 								</div>
 
 								{/* Recurring Booking */}
-								<div className="space-y-3 pt-3 border-t border-border">
-									<div className="flex items-center justify-between">
+								{isRecurring && (
+									<div className="space-y-3 pt-3 border-t border-border">
+										{/* <div className="flex items-center justify-between">
 										<label
 											htmlFor="recurring"
 											className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
@@ -824,9 +901,8 @@ export function AddBookingDrawer({
 											checked={isRecurring}
 											onCheckedChange={setIsRecurring}
 										/>
-									</div>
+									</div> */}
 
-									{isRecurring && (
 										<div className="space-y-3 p-3 bg-muted/50 rounded-lg">
 											<div className="grid grid-cols-2 gap-3">
 												<div className="space-y-2">
@@ -1047,7 +1123,7 @@ export function AddBookingDrawer({
 															Итоговая сумма:{' '}
 															<span className="text-primary font-semibold">
 																{(
-																	totalPrice ??
+																	totalPriceBooking ??
 																	0
 																).toLocaleString(
 																	'ru-RU'
@@ -1059,8 +1135,8 @@ export function AddBookingDrawer({
 												</div>
 											)}
 										</div>
-									)}
-								</div>
+									</div>
+								)}
 							</div>
 							{extras.length > 0 && (
 								<div className="space-y-3">
@@ -1169,6 +1245,36 @@ export function AddBookingDrawer({
 												</div>
 											);
 										})}
+										{totalBookings > 0 &&
+											extraPricePerSingle > 0 && (
+												<div className="space-y-2 p-3 pt-2">
+													<div className="p-2 bg-accent/10 rounded-lg border border-accent/20">
+														<p className="text-sm font-medium text-foreground">
+															Итого услуги (за 1
+															занятие):{' '}
+															<span className="text-accent">
+																{
+																	extraPricePerSingle
+																}
+															</span>
+														</p>
+													</div>
+													<div className="p-2.5 bg-primary/10 rounded-lg border border-primary/30">
+														<p className="text-sm font-medium text-foreground">
+															Итоговая сумма:{' '}
+															<span className="text-primary font-semibold">
+																{(
+																	totalExtraPrice ??
+																	0
+																).toLocaleString(
+																	'ru-RU'
+																)}{' '}
+																₽
+															</span>
+														</p>
+													</div>
+												</div>
+											)}
 									</div>
 								</div>
 							)}
