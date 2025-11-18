@@ -325,19 +325,25 @@ export default function SchedulePage() {
 									value={selectedLocation}
 									onValueChange={setSelectedLocation}
 								>
-									<SelectTrigger className="text-sm w-[180px]">
+									<SelectTrigger className="text-sm w-[210px]">
 										<SelectValue />
 									</SelectTrigger>
 									<SelectContent>
 										<SelectItem value="all">
 											Все адреса
 										</SelectItem>
-										{allCourts.map((court, index) => (
+										{Array.from(
+											new Set(
+												allCourts.map(
+													(court) => court.street
+												)
+											)
+										).map((street, index) => (
 											<SelectItem
-												key={`location${index}`}
-												value={court.street}
+												key={`location-${street}-${index}`}
+												value={street}
 											>
-												{court.street}
+												{street}
 											</SelectItem>
 										))}
 									</SelectContent>
@@ -347,7 +353,7 @@ export default function SchedulePage() {
 									value={selectedCourtType}
 									onValueChange={setSelectedCourtType}
 								>
-									<SelectTrigger className="text-sm w-[180px]">
+									<SelectTrigger className="text-sm w-[210px]">
 										<SelectValue placeholder="Тип корта" />
 									</SelectTrigger>
 									<SelectContent>
@@ -367,7 +373,7 @@ export default function SchedulePage() {
 									value={selectedSport}
 									onValueChange={setSelectedSport}
 								>
-									<SelectTrigger className="text-sm w-[180px]">
+									<SelectTrigger className="text-sm w-[210px]">
 										<SelectValue placeholder="Вид спорта" />
 									</SelectTrigger>
 									<SelectContent>
@@ -392,7 +398,7 @@ export default function SchedulePage() {
 									value={selectedCoverType}
 									onValueChange={setSelectedCoverType}
 								>
-									<SelectTrigger className="text-sm w-[180px]">
+									<SelectTrigger className="text-sm w-[210px]">
 										<SelectValue placeholder="Тип повехности" />
 									</SelectTrigger>
 									<SelectContent>

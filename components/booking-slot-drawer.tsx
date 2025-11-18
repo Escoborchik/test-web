@@ -753,102 +753,95 @@ export function BookingSlotDrawer({
 						)}
 					</div>
 
-					{booking.status !== 'pending-payment' && (
-						<div className="p-6 border-t border-border space-y-3">
-							{totalPriceBooking > 0 && (
-								<div className="p-3 bg-primary/10 rounded-lg border border-primary/30 mb-3">
-									<div className="space-y-1.5">
-										<div className="flex items-center justify-between text-sm">
-											<span className="text-muted-foreground">
-												Бронирование:
-											</span>
-											<span className="font-medium">
-												{totalPriceBooking.toLocaleString()}{' '}
-												₽
-											</span>
-										</div>
-										{booking?.extras.length > 0 && (
-											<div className="space-y-1">
-												<div className="flex items-center justify-between text-sm font-medium text-foreground pt-0.5">
-													<span>Услуги:</span>
-													<span>
-														{totalExtraPrice.toLocaleString()}{' '}
-														₽
-													</span>
-												</div>
-												{booking?.extras.map(
-													({ extraId, quantity }) => {
-														const extra =
-															extras.find(
-																(ext) =>
-																	ext.id ===
-																	extraId
-															);
-														if (!extra) return null;
-
-														const extraPrice =
-															extra.unit ===
-															'hour'
-																? extra.price *
-																  calculateDuration()
-																: extra.price;
-														const totalExtraPrice =
-															booking?.isRecurring
-																? extraPrice *
-																  quantity *
-																  remainingSessions!
-																: extraPrice *
-																  quantity;
-
-														return (
-															<div
-																key={extraId}
-																className="flex items-start justify-between text-xs text-muted-foreground pl-3"
-															>
-																<span className="flex-1">
-																	•{' '}
-																	{
-																		extra.title
-																	}{' '}
-																	× {quantity}{' '}
-																	{booking?.isRecurring &&
-																		` × ${remainingSessions!} занятий`}
-																</span>
-																<span className="font-medium ml-2">
-																	{totalExtraPrice.toLocaleString()}{' '}
-																	₽
-																</span>
-															</div>
-														);
-													}
-												)}
+					<div className="p-6 border-t border-border space-y-3">
+						{totalPriceBooking > 0 && (
+							<div className="p-3 bg-primary/10 rounded-lg border border-primary/30 mb-3">
+								<div className="space-y-1.5">
+									<div className="flex items-center justify-between text-sm">
+										<span className="text-muted-foreground">
+											Бронирование:
+										</span>
+										<span className="font-medium">
+											{totalPriceBooking.toLocaleString()}{' '}
+											₽
+										</span>
+									</div>
+									{booking?.extras.length > 0 && (
+										<div className="space-y-1">
+											<div className="flex items-center justify-between text-sm font-medium text-foreground pt-0.5">
+												<span>Услуги:</span>
+												<span>
+													{totalExtraPrice.toLocaleString()}{' '}
+													₽
+												</span>
 											</div>
-										)}
-										<div className="pt-1.5 mt-1.5 border-t border-primary/20 flex items-center justify-between">
-											<span className="text-sm font-semibold text-foreground">
-												Итоговая сумма:
-											</span>
-											<span className="text-base font-bold text-primary">
-												{(
-													totalExtraPrice +
-													totalPriceBooking
-												).toLocaleString()}{' '}
-												₽
-											</span>
+											{booking?.extras.map(
+												({ extraId, quantity }) => {
+													const extra = extras.find(
+														(ext) =>
+															ext.id === extraId
+													);
+													if (!extra) return null;
+
+													const extraPrice =
+														extra.unit === 'hour'
+															? extra.price *
+															  calculateDuration()
+															: extra.price;
+													const totalExtraPrice =
+														booking?.isRecurring
+															? extraPrice *
+															  quantity *
+															  remainingSessions!
+															: extraPrice *
+															  quantity;
+
+													return (
+														<div
+															key={extraId}
+															className="flex items-start justify-between text-xs text-muted-foreground pl-3"
+														>
+															<span className="flex-1">
+																• {extra.title}{' '}
+																× {quantity}{' '}
+																{booking?.isRecurring &&
+																	` × ${remainingSessions!} занятий`}
+															</span>
+															<span className="font-medium ml-2">
+																{totalExtraPrice.toLocaleString()}{' '}
+																₽
+															</span>
+														</div>
+													);
+												}
+											)}
 										</div>
+									)}
+									<div className="pt-1.5 mt-1.5 border-t border-primary/20 flex items-center justify-between">
+										<span className="text-sm font-semibold text-foreground">
+											Итоговая сумма:
+										</span>
+										<span className="text-base font-bold text-primary">
+											{(
+												totalExtraPrice +
+												totalPriceBooking
+											).toLocaleString()}{' '}
+											₽
+										</span>
 									</div>
 								</div>
-							)}
+							</div>
+						)}
 
-							{booking.status === 'pending' && (
-								<Button
-									onClick={handleConfirm}
-									className="w-full bg-[#1E7A4C] hover:bg-[#1E7A4C]/90 text-white"
-								>
-									Подтвердить бронирование
-								</Button>
-							)}
-
+						{booking.status === 'pending' && (
+							<Button
+								onClick={handleConfirm}
+								className="w-full bg-[#1E7A4C] hover:bg-[#1E7A4C]/90 text-white"
+							>
+								Подтвердить бронирование
+							</Button>
+						)}
+						{booking.status !== 'pending-payment' && (
 							<Button
 								variant="destructive"
 								className="w-full"
@@ -856,18 +849,18 @@ export function BookingSlotDrawer({
 							>
 								Отменить текущее
 							</Button>
+						)}
 
-							{booking.isRecurring && (
-								<Button
-									variant="outline"
-									className="w-full text-destructive hover:text-destructive bg-transparent"
-									onClick={() => setCancelAllDialogOpen(true)}
-								>
-									Отменить все повторения
-								</Button>
-							)}
-						</div>
-					)}
+						{booking.isRecurring && (
+							<Button
+								variant="outline"
+								className="w-full text-destructive hover:text-destructive bg-transparent"
+								onClick={() => setCancelAllDialogOpen(true)}
+							>
+								Отменить все повторения
+							</Button>
+						)}
+					</div>
 				</div>
 			</div>
 
