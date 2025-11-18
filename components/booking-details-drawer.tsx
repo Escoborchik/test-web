@@ -9,9 +9,11 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from '@/components/ui/dialog';
-import { RuShortDays } from '@/constants';
-import { useAppDispatch } from '@/store';
+import { RuShortDays, UNIT_TYPE_LABELS } from '@/constants';
+import { useAppDispatch, useAppSelector } from '@/store';
 import { updateStatusBooking } from '@/store/bookingsManagment';
+import { selectExtras } from '@/store/extrasManagment';
+import { selectTariffs } from '@/store/tariffsManagment';
 import { Booking } from '@/types/booking';
 import {
 	Calendar,
@@ -19,8 +21,9 @@ import {
 	Mail,
 	MapPin,
 	Phone,
-	Repeat,
 	RussianRuble,
+	ShoppingBag,
+	Tag,
 	User,
 	X,
 } from 'lucide-react';
@@ -38,6 +41,10 @@ export function BookingDetailsDrawer({
 	onClose,
 }: BookingDetailsDrawerProps) {
 	const dispatch = useAppDispatch();
+	const tariffs = useAppSelector(selectTariffs);
+	const extras = useAppSelector(selectExtras);
+
+	const tariff = tariffs.find((tariff) => tariff.id === booking?.tariffId);
 	const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
 	const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
 	const totalSessions = useMemo(() => {
@@ -69,6 +76,47 @@ export function BookingDetailsDrawer({
 	const handleReject = () => {
 		setRejectDialogOpen(true);
 	};
+
+	const calculateDuration = () => {
+		const [startTime, endTime] = booking?.time.split('-') ?? '08:00-23:00';
+
+		if (!startTime || !endTime) return 0;
+		const [startHour, startMin] = startTime.split(':').map(Number);
+		const [endHour, endMin] = endTime.split(':').map(Number);
+		const startMinutes = startHour * 60 + startMin;
+		const endMinutes = endHour * 60 + endMin;
+		const durationMinutes = endMinutes - startMinutes;
+		return durationMinutes / 60;
+	};
+
+	const calculateExtraPricePerSingle = () => {
+		return booking?.extras.reduce((acc, selectedExtra) => {
+			const rightExtra = extras.find(
+				(extra) => extra.id === selectedExtra.extraId
+			);
+
+			if (rightExtra) {
+				acc +=
+					rightExtra.unit === 'hour'
+						? selectedExtra.quantity * rightExtra.price * duration
+						: selectedExtra.quantity * rightExtra.price;
+
+				return acc;
+			}
+
+			return acc;
+		}, 0);
+	};
+
+	const duration = calculateDuration();
+
+	const totalPriceBooking = booking?.isRecurring
+		? totalSessions! * booking?.price
+		: booking?.price;
+	const extraPricePerSingle = calculateExtraPricePerSingle();
+	const totalExtraPrice = booking?.isRecurring
+		? totalSessions! * extraPricePerSingle
+		: extraPricePerSingle;
 
 	return (
 		<>
@@ -169,6 +217,22 @@ export function BookingDetailsDrawer({
 								Информация о бронировании
 							</h3>
 
+							{tariff && (
+								<div className="flex items-center gap-3">
+									<div className="w-9 h-9 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0">
+										<Tag className="h-5 w-5 text-accent" />
+									</div>
+									<div className="flex-1 min-w-0">
+										<p className="text-sm font-medium text-foreground">
+											«{tariff?.title}»
+										</p>
+										<p className="text-xs text-muted-foreground">
+											Тариф
+										</p>
+									</div>
+								</div>
+							)}
+
 							<div className="flex items-center gap-3">
 								<div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
 									<MapPin className="h-5 w-5 text-primary" />
@@ -238,13 +302,6 @@ export function BookingDetailsDrawer({
 						{/* Recurring Info */}
 						{booking.isRecurring && booking.recurringDetails && (
 							<div className="space-y-4 p-4 bg-accent/5 rounded-lg border border-accent/20">
-								<div className="flex items-center gap-2">
-									<Repeat className="h-5 w-5 text-accent" />
-									<h3 className="text-sm font-semibold text-primary">
-										Повторяющееся бронирование
-									</h3>
-								</div>
-
 								<div className="space-y-2 text-sm">
 									<div className="flex justify-between">
 										<span className="text-muted-foreground">
@@ -296,27 +353,273 @@ export function BookingDetailsDrawer({
 									)}
 
 									{booking.price && totalSessions && (
-										<div className="p-2.5 bg-accent/10 rounded border border-accent/30 text-center">
-											<p className="text-base text-muted-foreground mb-1">
-												Цена за все занятия
-											</p>
-											<p className="text-xl font-semibold text-accent">
-												{(
-													booking.price *
-													totalSessions
-												).toLocaleString()}{' '}
-												₽
-											</p>
+										<div className="pt-2 mt-2 border-t border-accent/20">
+											<div className="flex items-center justify-between">
+												<p className="text-sm font-medium text-muted-foreground">
+													Цена за бронирование:
+												</p>
+												<p className="text-base font-semibold text-accent">
+													{(
+														booking.price *
+														totalSessions
+													).toLocaleString()}{' '}
+													₽
+												</p>
+											</div>
 										</div>
 									)}
 								</div>
 							</div>
 						)}
+
+						<div className="flex flex-col">
+							{booking.extras && booking.extras.length > 0 && (
+								<div className="space-y-3">
+									<h3 className="text-sm font-semibold text-primary">
+										Дополнительные услуги
+									</h3>
+									<div className="space-y-2 p-3 bg-accent/5 rounded-lg border border-accent/20">
+										{extras.map((extra) => {
+											const rightBookingExtra =
+												booking.extras.find(
+													(selectedExtra) =>
+														selectedExtra.extraId ===
+														extra.id
+												);
+
+											if (!rightBookingExtra) return null;
+
+											return (
+												<div
+													key={
+														rightBookingExtra.extraId
+													}
+													className="flex items-center gap-3 p-2 bg-muted/50 rounded"
+												>
+													<div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+														<ShoppingBag className="h-4 w-4 text-primary" />
+													</div>
+													<div className="flex-1 min-w-0">
+														<p className="text-sm font-medium text-foreground">
+															{extra.title}
+														</p>
+														<p className="text-xs text-muted-foreground">
+															{
+																rightBookingExtra.quantity
+															}{' '}
+															× {extra.price} ₽/
+															{
+																UNIT_TYPE_LABELS[
+																	extra.unit
+																]
+															}
+														</p>
+													</div>
+													<div className="text-sm font-semibold text-primary">
+														{(
+															rightBookingExtra.quantity *
+															extra.price
+														).toLocaleString()}{' '}
+														₽
+													</div>
+												</div>
+											);
+										})}
+
+										<div className="pt-2 mt-2 border-t border-accent/20">
+											<div className="flex items-center justify-between">
+												<p className="text-sm font-medium text-muted-foreground">
+													Итого за услуги:
+												</p>
+												<p className="text-base font-semibold text-accent">
+													{totalExtraPrice.toLocaleString()}{' '}
+													₽
+												</p>
+											</div>
+										</div>
+									</div>
+								</div>
+							)}
+						</div>
 					</div>
+
+					{booking.status === 'confirmed' && (
+						<div className="p-4 border-t border-border space-y-2">
+							{totalPriceBooking > 0 && (
+								<div className="p-3 bg-primary/10 rounded-lg border border-primary/30 mb-3">
+									<div className="space-y-1.5">
+										<div className="flex items-center justify-between text-sm">
+											<span className="text-muted-foreground">
+												Бронирование:
+											</span>
+											<span className="font-medium">
+												{totalPriceBooking.toLocaleString()}{' '}
+												₽
+											</span>
+										</div>
+										{booking?.extras.length > 0 && (
+											<div className="space-y-1">
+												<div className="flex items-center justify-between text-sm font-medium text-foreground pt-0.5">
+													<span>Услуги:</span>
+													<span>
+														{totalExtraPrice.toLocaleString()}{' '}
+														₽
+													</span>
+												</div>
+												{booking?.extras.map(
+													({ extraId, quantity }) => {
+														const extra =
+															extras.find(
+																(ext) =>
+																	ext.id ===
+																	extraId
+															);
+														if (!extra) return null;
+
+														const extraPrice =
+															extra.unit ===
+															'hour'
+																? extra.price *
+																  calculateDuration()
+																: extra.price;
+														const totalExtraPrice =
+															booking?.isRecurring
+																? extraPrice *
+																  quantity *
+																  totalSessions!
+																: extraPrice *
+																  quantity;
+
+														return (
+															<div
+																key={extraId}
+																className="flex items-start justify-between text-xs text-muted-foreground pl-3"
+															>
+																<span className="flex-1">
+																	•{' '}
+																	{
+																		extra.title
+																	}{' '}
+																	× {quantity}{' '}
+																	{booking?.isRecurring &&
+																		` × ${totalSessions!} занятий`}
+																</span>
+																<span className="font-medium ml-2">
+																	{totalExtraPrice.toLocaleString()}{' '}
+																	₽
+																</span>
+															</div>
+														);
+													}
+												)}
+											</div>
+										)}
+										<div className="pt-1.5 mt-1.5 border-t border-primary/20 flex items-center justify-between">
+											<span className="text-sm font-semibold text-foreground">
+												Итоговая сумма:
+											</span>
+											<span className="text-base font-bold text-primary">
+												{(
+													totalExtraPrice +
+													totalPriceBooking
+												).toLocaleString()}{' '}
+												₽
+											</span>
+										</div>
+									</div>
+								</div>
+							)}
+						</div>
+					)}
 
 					{/* Footer Actions - Reduced padding */}
 					{booking.status === 'pending' && (
 						<div className="p-4 border-t border-border space-y-2">
+							{totalPriceBooking > 0 && (
+								<div className="p-3 bg-primary/10 rounded-lg border border-primary/30 mb-3">
+									<div className="space-y-1.5">
+										<div className="flex items-center justify-between text-sm">
+											<span className="text-muted-foreground">
+												Бронирование:
+											</span>
+											<span className="font-medium">
+												{totalPriceBooking.toLocaleString()}{' '}
+												₽
+											</span>
+										</div>
+										{booking?.extras.length > 0 && (
+											<div className="space-y-1">
+												<div className="flex items-center justify-between text-sm font-medium text-foreground pt-0.5">
+													<span>Услуги:</span>
+													<span>
+														{totalExtraPrice.toLocaleString()}{' '}
+														₽
+													</span>
+												</div>
+												{booking?.extras.map(
+													({ extraId, quantity }) => {
+														const extra =
+															extras.find(
+																(ext) =>
+																	ext.id ===
+																	extraId
+															);
+														if (!extra) return null;
+
+														const extraPrice =
+															extra.unit ===
+															'hour'
+																? extra.price *
+																  calculateDuration()
+																: extra.price;
+														const totalExtraPrice =
+															booking?.isRecurring
+																? extraPrice *
+																  quantity *
+																  totalSessions!
+																: extraPrice *
+																  quantity;
+
+														return (
+															<div
+																key={extraId}
+																className="flex items-start justify-between text-xs text-muted-foreground pl-3"
+															>
+																<span className="flex-1">
+																	•{' '}
+																	{
+																		extra.title
+																	}{' '}
+																	× {quantity}{' '}
+																	{booking?.isRecurring &&
+																		` × ${totalSessions!} занятий`}
+																</span>
+																<span className="font-medium ml-2">
+																	{totalExtraPrice.toLocaleString()}{' '}
+																	₽
+																</span>
+															</div>
+														);
+													}
+												)}
+											</div>
+										)}
+										<div className="pt-1.5 mt-1.5 border-t border-primary/20 flex items-center justify-between">
+											<span className="text-sm font-semibold text-foreground">
+												Итоговая сумма:
+											</span>
+											<span className="text-base font-bold text-primary">
+												{(
+													totalExtraPrice +
+													totalPriceBooking
+												).toLocaleString()}{' '}
+												₽
+											</span>
+										</div>
+									</div>
+								</div>
+							)}
+
 							<Button
 								className="w-full bg-[#1E7A4C] hover:bg-[#1E7A4C]/90 text-white"
 								onClick={handleConfirm}
