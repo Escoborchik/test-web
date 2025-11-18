@@ -1,7 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { MultiSelectWithAll } from '@/components/ui/multi-select-with-all';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TimePicker } from '@/components/ui/timepicker';
 import { useAppSelector } from '@/store';
@@ -24,11 +23,11 @@ export const TariffFormCreate = ({
 	const [formData, setFormData] = useState<Tariff>({
 		id: crypto.randomUUID(),
 		title: '',
-		courtIds: [],
 		prices: {
 			weekdays: [],
 			weekends: [],
 		},
+		isActive: true,
 	});
 
 	const addPriceSlot = (dayGroup: PriceDayGroup) => {
@@ -104,27 +103,6 @@ export const TariffFormCreate = ({
 								}
 								placeholder="Базовый тариф"
 								className="h-9"
-							/>
-						</div>
-
-						<div className="space-y-2">
-							<Label htmlFor="courts" className="text-sm">
-								Применить к кортам
-							</Label>
-							<MultiSelectWithAll
-								options={courts.map((court) => ({
-									label: court.name,
-									value: court.id,
-								}))}
-								selected={formData.courtIds}
-								onChange={(selected) =>
-									setFormData({
-										...formData,
-										courtIds: selected,
-									})
-								}
-								placeholder="Выберите корты"
-								className="w-full"
 							/>
 						</div>
 					</div>

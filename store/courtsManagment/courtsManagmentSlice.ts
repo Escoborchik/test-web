@@ -10,12 +10,12 @@ const initialState: CourtsManagmentState = {
 	courts: [
 		{
 			id: 'court-1',
-			name: 'Central Court A',
+			name: 'Корт №1',
 			coverType: 'hard',
 			sportType: 'tennis',
 			isIndoor: false,
 			isVisible: true,
-			street: 'ул. Спортивная, 15',
+			street: 'Сибирский тракт, 34Б',
 			image: '',
 			prices: {
 				weekdays: [
@@ -23,24 +23,31 @@ const initialState: CourtsManagmentState = {
 						id: 'court-1-wd-morning',
 						dayGroup: 'weekdays',
 						from: '08:00',
-						to: '12:00',
-						price: 1800,
+						to: '16:00',
+						price: 1700,
 					},
 					{
 						id: 'court-1-wd-evening',
 						dayGroup: 'weekdays',
-						from: '18:00',
-						to: '22:00',
-						price: 2400,
+						from: '16:00',
+						to: '21:00',
+						price: 2000,
+					},
+					{
+						id: 'court-1-wd-night',
+						dayGroup: 'weekdays',
+						from: '21:00',
+						to: '23:00',
+						price: 1700,
 					},
 				],
 				weekends: [
 					{
 						id: 'court-1-we-prime',
 						dayGroup: 'weekends',
-						from: '09:00',
-						to: '21:00',
-						price: 2800,
+						from: '08:00',
+						to: '23:00',
+						price: 1700,
 					},
 				],
 			},
@@ -48,12 +55,12 @@ const initialState: CourtsManagmentState = {
 		},
 		{
 			id: 'court-2',
-			name: 'Panorama Indoor',
-			coverType: 'terraflex',
-			sportType: 'padel',
-			isIndoor: true,
+			name: 'Корт №2',
+			coverType: 'hard',
+			sportType: 'tennis',
+			isIndoor: false,
 			isVisible: true,
-			street: 'просп. Панорамный, 8',
+			street: 'Сибирский тракт, 34Б',
 			image: '',
 			prices: {
 				weekdays: [
@@ -86,12 +93,12 @@ const initialState: CourtsManagmentState = {
 		},
 		{
 			id: 'court-3',
-			name: 'Green Park Court',
-			coverType: 'grass',
+			name: 'Корт №3',
+			coverType: 'hard',
 			sportType: 'tennis',
 			isIndoor: false,
 			isVisible: true,
-			street: 'ул. Парковая, 3к2',
+			street: 'Сибирский тракт, 34Б',
 			image: '',
 			prices: {
 				weekdays: [
