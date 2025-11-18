@@ -1510,6 +1510,7 @@ export function AddBookingDrawer({
 									email: '',
 								});
 								setConfirmDialogOpen(false);
+								setSelectedExtras([]);
 								onClose();
 							}}
 						>

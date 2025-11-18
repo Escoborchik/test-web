@@ -9,12 +9,18 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from '@/components/ui/dialog';
-import { COVER_TYPE_LABELS, RuShortDays, SPORT_TYPE_LABELS } from '@/constants';
+import {
+	COVER_TYPE_LABELS,
+	RuShortDays,
+	SPORT_TYPE_LABELS,
+	UNIT_TYPE_LABELS,
+} from '@/constants';
 import { useAppDispatch, useAppSelector } from '@/store';
 import {
 	deleteDateFromRecurringBooking,
 	updateStatusBooking,
 } from '@/store/bookingsManagment';
+import { selectExtras } from '@/store/extrasManagment';
 import { selectTariffs } from '@/store/tariffsManagment';
 import { CoverType, SportType } from '@/types';
 import { Booking, ShortDays } from '@/types/booking';
@@ -26,6 +32,7 @@ import {
 	MapPin,
 	Phone,
 	RussianRuble,
+	ShoppingBag,
 	Tag,
 	User,
 	X,
@@ -53,9 +60,50 @@ export function BookingSlotDrawer({
 	onClose,
 }: BookingSlotDrawerProps) {
 	const dispatch = useAppDispatch();
+	const extras = useAppSelector(selectExtras);
 	const tariffs = useAppSelector(selectTariffs);
 	const tariff = tariffs.find((tariff) => tariff.id === booking?.tariffId);
 	const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+
+	const calculateDuration = () => {
+		const [startTime, endTime] = booking?.time.split('-') ?? '08:00-23:00';
+
+		if (!startTime || !endTime) return 0;
+		const [startHour, startMin] = startTime.split(':').map(Number);
+		const [endHour, endMin] = endTime.split(':').map(Number);
+		const startMinutes = startHour * 60 + startMin;
+		const endMinutes = endHour * 60 + endMin;
+		const durationMinutes = endMinutes - startMinutes;
+		return durationMinutes / 60;
+	};
+
+	const duration = calculateDuration();
+
+	const calculateExtraPricePerSingle = () => {
+		return booking?.extras.reduce((acc, selectedExtra) => {
+			const rightExtra = extras.find(
+				(extra) => extra.id === selectedExtra.extraId
+			);
+
+			if (rightExtra) {
+				acc +=
+					rightExtra.unit === 'hour'
+						? selectedExtra.quantity * rightExtra.price * duration
+						: selectedExtra.quantity * rightExtra.price;
+
+				return acc;
+			}
+
+			return acc;
+		}, 0);
+	};
+
+	const totalBookings = booking?.date.length;
+	const extraPricePerSingle = calculateExtraPricePerSingle();
+	const totalExtraPrice = booking?.isRecurring
+		? totalBookings * extraPricePerSingle
+		: extraPricePerSingle;
+
 	const handleConfirm = () => {
 		setConfirmDialogOpen(true);
 	};
@@ -631,6 +679,72 @@ export function BookingSlotDrawer({
 								)}
 							</div>
 						</div>
+
+						{booking.extras && booking.extras.length > 0 && (
+							<div className="space-y-3">
+								<h3 className="text-sm font-semibold text-primary">
+									Дополнительные услуги
+								</h3>
+								<div className="space-y-2 p-3 bg-accent/5 rounded-lg border border-accent/20">
+									{extras.map((extra) => {
+										const rightBookingExtra =
+											booking.extras.find(
+												(selectedExtra) =>
+													selectedExtra.extraId ===
+													extra.id
+											);
+
+										if (!rightBookingExtra) return null;
+
+										return (
+											<div
+												key={rightBookingExtra.extraId}
+												className="flex items-center gap-3 p-2 bg-muted/50 rounded"
+											>
+												<div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+													<ShoppingBag className="h-4 w-4 text-primary" />
+												</div>
+												<div className="flex-1 min-w-0">
+													<p className="text-sm font-medium text-foreground">
+														{extra.title}
+													</p>
+													<p className="text-xs text-muted-foreground">
+														{
+															rightBookingExtra.quantity
+														}{' '}
+														× {extra.price} ₽/
+														{
+															UNIT_TYPE_LABELS[
+																extra.unit
+															]
+														}
+													</p>
+												</div>
+												<div className="text-sm font-semibold text-accent">
+													{(
+														rightBookingExtra.quantity *
+														extra.price
+													).toLocaleString()}{' '}
+													₽
+												</div>
+											</div>
+										);
+									})}
+
+									<div className="pt-2 mt-2 border-t border-accent/20">
+										<div className="flex items-center justify-between">
+											<p className="text-sm font-medium text-muted-foreground">
+												Итого за услуги:
+											</p>
+											<p className="text-base font-semibold text-accent">
+												{totalExtraPrice.toLocaleString()}{' '}
+												₽
+											</p>
+										</div>
+									</div>
+								</div>
+							</div>
+						)}
 					</div>
 
 					{booking.status !== 'pending-payment' && (
