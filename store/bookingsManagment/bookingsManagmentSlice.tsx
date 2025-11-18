@@ -59,7 +59,7 @@ const initialState: BookingManagmentState = {
 			price: 3200,
 			status: 'confirmed',
 			isRecurring: true,
-			tariffId: 'tariff-many-visit',
+			tariffId: 'tariff-subscription',
 			extras: [{ extraId: 'extra-ball-set', quantity: 2 }],
 			recurringDetails: {
 				startDate: '2025-11-12',

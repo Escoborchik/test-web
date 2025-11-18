@@ -28,6 +28,11 @@ import { Booking } from '@/types/booking';
 import { Check, ChevronLeft, ChevronRight, Repeat, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { updateStatusBooking } from '@/store/bookingsManagment';
 import { selectCourts } from '@/store/courtsManagment';
 import { selectTariffs } from '@/store/tariffsManagment';
@@ -521,10 +526,85 @@ export default function BookingsPage() {
 															{booking.firstName}{' '}
 															{booking.lastName}
 														</p>
-														{booking.isRecurring && (
-															<div className="absolute top-2 right-2 w-4.5 h-4.5 rounded-full bg-accent flex items-center justify-center">
-																<Repeat className="w-2.5 h-2.5 text-white" />
-															</div>
+														{booking.tariffId ===
+															'tariff-subscription' && (
+															<>
+																{/* <Tooltip>
+															<TooltipTrigger
+																asChild
+															>
+																<div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-accent/20 hover:bg-accent/30 transition-colors cursor-help">
+																	<span className="text-xs font-medium text-accent">
+																		{tariff
+																			.courtIds
+																			.length ===
+																		courtsFromStore.length
+																			? 'Применяется ко всем кортам'
+																			: `Применяется к ${tariff.courtIds.length} из ${courtsFromStore.length} кортов`}
+																	</span>
+																</div>
+															</TooltipTrigger>
+															<TooltipContent className="max-w-[250px]">
+																<div className="space-y-1.5">
+																	<p className="text-xs font-semibold mb-1 text-accent-foreground">
+																		Корты с
+																		этим
+																		тарифом:
+																	</p>
+																	{tariff.courtIds.map(
+																		(
+																			courtId: string
+																		) => {
+																			const court =
+																				courtsFromStore.find(
+																					(
+																						c
+																					) =>
+																						c.id ===
+																						courtId
+																				);
+																			return court ? (
+																				<div
+																					key={
+																						courtId
+																					}
+																					className="flex items-center gap-1.5 text-xs"
+																				>
+																					<div className="h-1 w-1 rounded-full bg-accent" />
+																					<span>
+																						{
+																							court.name
+																						}
+																					</span>
+																				</div>
+																			) : null;
+																		}
+																	)}
+																</div>
+															</TooltipContent>
+														</Tooltip> */}
+																<Tooltip>
+																	<TooltipTrigger
+																		asChild
+																	>
+																		<div
+																			className="absolute top-2 right-2 w-4.5 h-4.5 rounded-full bg-accent flex items-center justify-center cursor-pointer pointer-events-auto z-10"
+																			onMouseDown={(
+																				e
+																			) =>
+																				e.stopPropagation()
+																			}
+																		>
+																			<Repeat className="w-2.5 h-2.5 text-white" />
+																		</div>
+																	</TooltipTrigger>
+																	<TooltipContent className="max-w-[250px]">
+																		<p className="text-xs font-semibold mb-1 text-accent-foreground">
+																			Абонемент
+																		</p>
+																	</TooltipContent>
+																</Tooltip>
+															</>
 														)}
 													</td>
 													<td className="p-4 text-sm text-foreground">
