@@ -21,7 +21,7 @@ const initialState: BookingManagmentState = {
 			status: 'confirmed',
 			isRecurring: false,
 			tariffId: 'tariff-single-visit',
-			extras: [],
+			extras: [{ extraId: 'extra-racket-rental', quantity: 1 }],
 		},
 		{
 			id: 'booking-4',
@@ -60,7 +60,7 @@ const initialState: BookingManagmentState = {
 			status: 'confirmed',
 			isRecurring: true,
 			tariffId: 'tariff-many-visit',
-			extras: [],
+			extras: [{ extraId: 'extra-ball-set', quantity: 2 }],
 			recurringDetails: {
 				startDate: '2025-11-12',
 				endDate: '2025-11-29',

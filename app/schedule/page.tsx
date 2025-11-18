@@ -164,6 +164,25 @@ export default function SchedulePage() {
 				.toString()
 				.padStart(2, '0')}`;
 
+			// Определяем, выходной день или будний
+			const dayOfWeek = selectedDate.getDay();
+			const isWeekend = dayOfWeek === 0 || dayOfWeek === 6; // 0 = воскресенье, 6 = суббота
+			const dayGroup = isWeekend ? 'weekends' : 'weekdays';
+			const priceSlots = court.prices[dayGroup] || [];
+
+			// Находим подходящий ценовой слот по времени
+			const timeToMinutes = (timeStr: string) => {
+				const [hours, minutes] = timeStr.split(':').map(Number);
+				return hours * 60 + minutes;
+			};
+
+			const timeMinutes = timeToMinutes(time);
+			const matchedSlot = priceSlots.find((slot) => {
+				const fromMinutes = timeToMinutes(slot.from);
+				const toMinutes = timeToMinutes(slot.to);
+				return timeMinutes >= fromMinutes && timeMinutes < toMinutes;
+			});
+
 			setSelectedSlot({
 				...bookingInfo,
 				courtName: court.name,
@@ -175,6 +194,7 @@ export default function SchedulePage() {
 				endTime,
 				courtId: court.id,
 				currentDate: selectedDate,
+				pricePerSession: matchedSlot?.price ?? 0,
 			});
 			setBookingSlotDrawerOpen(true);
 		} else {
