@@ -23,7 +23,6 @@ import {
 } from '@/types/booking';
 import {
 	CalendarIcon,
-	Mail,
 	MapPin,
 	Minus,
 	Package,
@@ -716,29 +715,6 @@ export function AddBookingDrawer({
 										}
 										type="tel"
 										placeholder="+7 (999) 123-45-67"
-										className="h-9"
-									/>
-								</div>
-
-								<div className="space-y-2">
-									<Label
-										htmlFor="email"
-										className="text-sm flex items-center gap-2"
-									>
-										<Mail className="h-4 w-4 text-muted-foreground" />
-										Email
-									</Label>
-									<Input
-										id="email"
-										value={clientInfo.email}
-										onChange={(e) =>
-											setClientInfo((prevState) => ({
-												...prevState,
-												email: e.target.value,
-											}))
-										}
-										type="email"
-										placeholder="example@mail.ru"
 										className="h-9"
 									/>
 								</div>
