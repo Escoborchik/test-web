@@ -14,6 +14,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from '@/components/ui/dialog';
+import { MultiSelectTariffs } from '@/components/ui/multi-select-tariffs';
 import {
 	Select,
 	SelectContent,
@@ -105,7 +106,7 @@ export default function BookingsPage() {
 	const courts = useAppSelector(selectCourts);
 	// const [selectedDate, setSelectedDate] = useState<Date | undefined>();
 	const [selectedCourtId, setSelectedCourtId] = useState<string>('all');
-	const [selectedTariff, setSelectedTariff] = useState(tariffs[0].id);
+	const [selectedTariffs, setSelectedTariffs] = useState<string[]>([]);
 
 	const filteredBookings = useMemo(() => {
 		return bookings.filter((booking) => {
@@ -113,11 +114,13 @@ export default function BookingsPage() {
 				selectedCourtId === 'all' ||
 				booking.courtId === selectedCourtId;
 
-			const selectedTariffId = booking.tariffId === selectedTariff;
+			const matchesTariff =
+				selectedTariffs.length === 0 ||
+				selectedTariffs.includes(booking.tariffId || '');
 
-			return matchesCourt && selectedTariffId;
+			return matchesCourt && matchesTariff;
 		});
-	}, [bookings, selectedCourtId, selectedTariff]);
+	}, [bookings, selectedCourtId, selectedTariffs]);
 
 	const pendingBookings = useMemo(
 		() =>
@@ -277,26 +280,20 @@ export default function BookingsPage() {
 							</div>
 
 							<div>
-								<label className="text-sm font-medium text-foreground mb-1 block">
-									Тип брони
+								<label className="text-sm font-medium text-foreground mb-1 block ">
+									Тип тарифа
 								</label>
-								<Select
-									value={selectedTariff}
-									onValueChange={(value) =>
-										setSelectedTariff(value)
-									}
-								>
-									<SelectTrigger className="h-9 w-[180px]">
-										<SelectValue />
-									</SelectTrigger>
-									<SelectContent>
-										{tariffs.map((tariff) => (
-											<SelectItem value={tariff.id}>
-												{tariff.title}
-											</SelectItem>
-										))}
-									</SelectContent>
-								</Select>
+								<MultiSelectTariffs
+									options={tariffs.map((tariff) => ({
+										label: tariff.title,
+										value: tariff.id,
+									}))}
+									selected={selectedTariffs}
+									onChange={setSelectedTariffs}
+									placeholder="Все тарифы"
+									defaultToAll
+									className="h-9 min-w-[200px]"
+								/>
 							</div>
 						</div>
 					</Card>
